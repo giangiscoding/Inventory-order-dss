@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Claude Code internal
+.claude/
+
+# LaTeX build artifacts
+report/*.aux
+report/*.fdb_latexmk
+report/*.fls
+report/*.log
+report/*.lof
+report/*.lot
+report/*.out
+report/*.toc
+
+# OS
+.DS_Store
+Thumbs.db
