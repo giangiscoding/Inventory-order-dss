@@ -362,18 +362,7 @@ Tập dữ liệu gồm \textbf{120 quan sát tháng} (từ tháng 1/2015 đến
   \item \textbf{10 biến ngoại sinh vĩ mô:} CompetitorQuantity, PromotionAmount, Construction, CPI, Exports, Imports, IPI, RegisteredFDI, DisbursedFDI, RetailSales.
 \end{itemize}
 
-\begin{table}[H]
-\centering
-\caption{Thống kê mô tả biến mục tiêu \texttt{Quantity}}
-\label{tab:stats}
-\begin{tabular}{|l|r|r|r|r|r|r|}
-\hline
- & Min & Q1 & Trung vị & Mean & Q3 & Max \\
-\hline
-Quantity & 91.831 & 234.948 & 316.498 & 316.571 & 400.133 & 614.977 \\
-\hline
-\end{tabular}
-\end{table}
+Thống kê mô tả chi tiết của chuỗi \texttt{Quantity} được trình bày tại Bảng~\ref{tab:desc} (mục~\ref{sec:eda_overview}).
 
 \subsection{Đặc điểm chuỗi}
 
@@ -406,7 +395,7 @@ Tập validation dùng để tối ưu siêu tham số (Optuna) và chọn early
 \section{Phân tích khám phá dữ liệu (EDA)}
 % --------------
 
-\subsection{Tổng quan chuỗi thời gian}
+\subsection{Tổng quan chuỗi thời gian}\label{sec:eda_overview}
 
 Hình~\ref{fig:series_split} hiển thị chuỗi \texttt{Quantity} trong suốt 10 năm (2015-2024) cùng với ranh giới phân chia 3 tập dữ liệu. Chuỗi dao động mạnh quanh mức trung bình $\bar{y} = 349{,}023$ đơn vị, với hệ số biến thiên $\text{CV} = 21{,}3\%$ - cho thấy nhu cầu không ổn định theo thời gian.
 
