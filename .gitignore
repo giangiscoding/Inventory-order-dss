@@ -26,6 +26,9 @@ report/*.lot
 report/*.out
 report/*.toc
 report/*.synctex.gz
+report/*.nav
+report/*.snm
+report/*.vrb
 
 # OS
 .DS_Store
