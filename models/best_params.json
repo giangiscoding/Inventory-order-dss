@@ -5,9 +5,9 @@
     "n_blocks": 2,
     "hidden_size": 512,
     "n_layers": 3,
-    "learning_rate": 0.00030819408864117483,
+    "learning_rate": 0.00048420803007295733,
     "batch_size": 8,
-    "dropout": 0.0016375726131938328,
+    "dropout": 0.12813369168999952,
     "revin_affine": false
   },
   "horizon": 1,
@@ -20,8 +20,8 @@
     0.9,
     0.95
   ],
-  "scale": 351189.1979166667,
-  "best_epoch": 100,
-  "best_val_pinball": 792.6194225115729,
-  "sigma_demand_monthly": 4481.6201171875
+  "scale": 353156.46428571426,
+  "best_epoch": 80,
+  "best_val_pinball": 979.1484284946085,
+  "sigma_demand_monthly": 5194.763671875
 }

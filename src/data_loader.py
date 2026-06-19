@@ -27,9 +27,10 @@ def load_series(path: Path = DATA_PATH) -> tuple[np.ndarray, pd.DatetimeIndex]:
     return y, months
 
 
-def split_indices(n: int, ratios: tuple[float, float, float] = (0.8, 0.1, 0.1)) -> tuple[int, int]:
-    """Chia 8/1/1 theo thoi gian. Tra ve (train_end, val_end): train [0, train_end),
-    val [train_end, val_end), test [val_end, n)."""
+def split_indices(n: int, ratios: tuple[float, float, float] = (0.7, 0.1, 0.2)) -> tuple[int, int]:
+    """Chia 7/1/2 theo thoi gian (test lon hon de danh gia on dinh hon).
+    Tra ve (train_end, val_end): train [0, train_end), val [train_end, val_end),
+    test [val_end, n)."""
     train_end = int(round(n * ratios[0]))
     val_end = train_end + int(round(n * ratios[1]))
     return train_end, val_end
