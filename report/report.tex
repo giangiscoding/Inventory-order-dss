@@ -20,7 +20,7 @@
 \usepackage{subcaption}
 \usepackage[table,xcdraw]{xcolor}
 \usepackage{tikz}
-\usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit, backgrounds}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit, backgrounds, calc}
 
 % - Tables -
 \usepackage{booktabs}
@@ -93,43 +93,58 @@
 \begin{document}
 
 % ==================== BÌA ====================
+\definecolor{bkblue}{HTML}{1A3A8F}
 \begin{titlepage}
+\begin{tikzpicture}[remember picture, overlay]
+  % --- Khung vien doi ---
+  \draw[bkblue, line width=0.5pt]
+    ($(current page.north west)+(1.0cm,-1.0cm)$) rectangle ($(current page.south east)+(-1.0cm,1.0cm)$);
+  \draw[bkblue, line width=2.2pt]
+    ($(current page.north west)+(1.35cm,-1.35cm)$) rectangle ($(current page.south east)+(-1.35cm,1.35cm)$);
+  % --- O vuong trang tri 4 goc ---
+  \draw[bkblue, line width=1pt] ($(current page.north west)+(0.82cm,-0.82cm)$) rectangle ($(current page.north west)+(1.53cm,-1.53cm)$);
+  \draw[bkblue, line width=1pt] ($(current page.north east)+(-0.82cm,-0.82cm)$) rectangle ($(current page.north east)+(-1.53cm,-1.53cm)$);
+  \draw[bkblue, line width=1pt] ($(current page.south west)+(0.82cm,0.82cm)$) rectangle ($(current page.south west)+(1.53cm,1.53cm)$);
+  \draw[bkblue, line width=1pt] ($(current page.south east)+(-0.82cm,0.82cm)$) rectangle ($(current page.south east)+(-1.53cm,1.53cm)$);
+\end{tikzpicture}
 \begin{center}
 
-{\large \textbf{ĐẠI HỌC BÁCH KHOA HÀ NỘI}\\[2pt]
-\textbf{KHOA TOÁN TIN}}
+{\large \textbf{ĐẠI HỌC BÁCH KHOA HÀ NỘI}}\\[3pt]
+{\large \textbf{KHOA TOÁN - TIN}}\\[2pt]
+{\textbf{---o0o---}}
 
-\vspace{1.5cm}
+\vspace{0.7cm}
+\includegraphics[height=4.3cm]{figures/logo.png}
 
-\rule{\linewidth}{0.5mm}\\[0.4cm]
-{\LARGE \bfseries HỆ HỖ TRỢ QUYẾT ĐỊNH ĐẶT HÀNG}\\[0.4cm]
-{\large \bfseries DỰA TRÊN DỰ BÁO CHUỖI THỜI GIAN ĐA PHÂN VỊ\\
-TỐI ƯU HÓA TỒN KHO TRONG ĐIỀU KIỆN KHÔNG CHẮC CHẮN}
-\rule{\linewidth}{0.5mm}
+\vspace{0.7cm}
+{\LARGE \bfseries BÁO CÁO MÔN}\\[0.35cm]
+{\LARGE \bfseries HỆ HỖ TRỢ QUYẾT ĐỊNH}
 
-\vspace{0.8cm}
-{\large \textbf{Môn học:} Hệ hỗ trợ quyết định}\\[0.4cm]
-{\large \textbf{Học kỳ:} 20252 - Năm học 2024-2025}
-
-\vfill
-
+\vspace{0.9cm}
 \begin{flushleft}
-{\large
-\textbf{Thông tin sinh viên:}\\[6pt]
-\begin{tabular}{ll}
-Họ và tên: & Nguyễn Trường Giang \quad --- MSSV: \textit{20227044} \\
-           & Đinh Hải Phong \qquad\;\, --- MSSV: \textit{20210983} \\
-Lớp:       & \textit{169317} \\
-Email:     & giang.nt04@outlook.com.vn \\
-\end{tabular}
-}
+\hspace{1.2cm}{\large \bfseries\itshape ĐỀ TÀI:}
 \end{flushleft}
+\vspace{0.1cm}
+{\large \bfseries HỆ HỖ TRỢ QUYẾT ĐỊNH ĐẶT HÀNG DỰA TRÊN\\
+DỰ BÁO CHUỖI THỜI GIAN ĐA PHÂN VỊ VÀ\\
+TỐI ƯU HÓA TỒN KHO}
+
+\vspace{0.9cm}
+{\large \textbf{GVHD:} Trần Ngọc Thăng, Lê Hải Hà}
 
 \vspace{0.5cm}
-{\large \textbf{Giảng viên hướng dẫn:} \textit{Trần Ngọc Thăng, Lê Hải Hà}}
+{\textbf{Nhóm sinh viên thực hiện: Lớp 169317}}
 
-\vspace{0.8cm}
-{\large Hà Nội, tháng 6 năm 2025}
+\vspace{0.25cm}
+{\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{ll}
+\textit{Họ và tên} \hspace{2.5cm} & \textit{MSSV} \\
+Nguyễn Trường Giang & 20227044 \\
+Đinh Hải Phong & 20210983 \\
+\end{tabular}}
+
+\vfill
+{\large Hà Nội, 6/2025}
 \end{center}
 \end{titlepage}
 
