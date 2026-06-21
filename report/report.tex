@@ -828,6 +828,46 @@ Siêu tham số & Giá trị tối ưu \\
 
 Cửa sổ nhìn lại $L=24$ tháng là hợp lý cho chuỗi tháng có chu kỳ mùa vụ tiềm ẩn: mô hình có thể tham chiếu hai năm dữ liệu lịch sử. Hidden size 512 cho thấy bài toán cần dung lượng biểu diễn đủ lớn. Dropout $\approx 0{,}13$ cung cấp một mức điều chuẩn (regularization) nhẹ, hợp lý với tập huấn luyện nhỏ.
 
+\section{So sánh top-5 bộ siêu tham số}
+\label{sec:top5}
+
+Thay vì chỉ giữ một bộ tốt nhất, chúng tôi lấy \textbf{5 bộ siêu tham số tốt nhất} (theo pinball loss trên validation, trong 87 trial chạy xong) và huấn luyện lại từng bộ trên train+val rồi đánh giá trên test. Mục đích: kiểm chứng độ ổn định của lựa chọn và xem xếp hạng validation có khớp với test không (Bảng~\ref{tab:top5}, Hình~\ref{fig:top5}).
+
+\begin{table}[H]
+\centering
+\scriptsize
+\caption{Top-5 bộ siêu tham số RevIN+N-BEATS (xếp theo pinball loss trên validation). Bộ \#1 là mô hình triển khai.}
+\label{tab:top5}
+\begin{tabular}{|c|c|c|c|c|c|c|r|r|r|r|}
+\hline
+\rowcolor{gray!18}
+Hạng & $L$ & s$\times$b & hidden & lr$_{(\times 10^{-4})}$ & dropout & affine & Val pin. & Test MAE & MAPE\% & Test pin. \\
+\hline
+\rowcolor{gray!18}
+\textbf{1} & 24 & 2$\times$2 & 512 & 4,84 & 0,128 & -- & \textbf{979} & 5.048 & 1,52 & \textbf{1.352} \\
+2 & 24 & 2$\times$2 & 512 & 1,44 & 0,074 & -- & 1.031 & 6.024 & 1,87 & 1.725 \\
+3 & 24 & 2$\times$2 & 512 & 1,48 & 0,062 & \checkmark & 1.066 & 5.985 & 1,81 & 1.767 \\
+4 & 24 & 2$\times$2 & 512 & 1,70 & 0,086 & -- & 1.154 & 5.658 & 1,70 & 1.664 \\
+5 & 24 & 2$\times$2 & 448 & 1,40 & 0,129 & -- & 1.175 & \textbf{4.115} & \textbf{1,28} & 1.380 \\
+\hline
+\end{tabular}
+\end{table}
+
+\textbf{Nhận xét:}
+\begin{itemize}
+  \item \textbf{Kiến trúc hội tụ ổn định:} cả 5 bộ tốt nhất đều dùng $L=24$, 2 stack $\times$ 2 block, 3 lớp, hidden 448--512; chỉ khác nhau ở learning rate, dropout và affine. Điều này cho thấy vùng kiến trúc này \emph{robust} --- Optuna nhất quán hội tụ về cùng một dạng mô hình.
+  \item \textbf{Bộ \#1 (triển khai) tốt nhất theo pinball loss} trên cả validation (979) lẫn test (1.352) --- thước đo chuẩn cho dự báo phân vị --- nên là lựa chọn hợp lý.
+  \item \textbf{Xếp hạng validation không hoàn toàn dự đoán test:} bộ \#5 (val kém nhất trong 5) lại đạt \emph{test MAE thấp nhất} (4.115) và MAPE 1,28\%. Nguyên nhân chính là tập validation nhỏ (12 điểm) khiến ước lượng val có nhiễu. Đây là lý do nên \emph{so sánh nhiều bộ} thay vì tin tuyệt đối vào một bộ duy nhất, và củng cố hạn chế về cỡ dữ liệu.
+  \item Chênh lệch test pinball giữa 5 bộ khá nhỏ (1.352--1.767), cho thấy mô hình không quá nhạy với siêu tham số trong vùng tốt.
+\end{itemize}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{figures/hparam_top5.png}
+  \caption{Top-5 bộ siêu tham số: pinball loss validation (tiêu chí xếp hạng), MAE test và pinball test. Bộ triển khai (\#1, cam) tốt nhất về pinball; bộ \#5 lại tốt nhất về MAE test.}
+  \label{fig:top5}
+\end{figure}
+
 \section{Chỉ số hiệu suất dự báo}
 
 \subsection{So sánh với baseline}
@@ -1276,6 +1316,7 @@ Inventory-order-dss/
 |   +- train.py             (huan luyen, pinball loss, early stopping)
 |   +- tune_optuna.py       (Optuna 100 trial, luu ket qua)
 |   +- compare_models.py    (so sanh 5 kien truc, cung giao thuc)
+|   +- compare_hparams.py   (so sanh top-5 bo sieu tham so)
 |   +- evaluate.py          (MAE/RMSE/MAPE + pinball + coverage)
 |   +- inventory.py         (newsvendor + EOQ)
 +- models/
@@ -1285,6 +1326,7 @@ Inventory-order-dss/
 |   +- forecast.json        (phan vi test & tuong lai cho app)
 |   +- metrics.json
 |   +- comparison.json      (ket qua so sanh 5 mo hinh)
+|   +- hparam_top5.json     (top-5 bo sieu tham so)
 |   +- forecast_plot.png
 +- app/
     +- app.py               (Streamlit ban ky thuat, cong 8502)
@@ -1295,6 +1337,7 @@ Lệnh chạy chính:
 \begin{verbatim}
 python -m src.tune_optuna 100      # tim sieu tham so + train mo hinh cuoi
 python -m src.compare_models 3     # so sanh 5 kien truc (3 hat giong)
+python -m src.compare_hparams 100 5 # so sanh top-5 bo sieu tham so
 streamlit run app/app.py           # ung dung ky thuat
 \end{verbatim}
 
