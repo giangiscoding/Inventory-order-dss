@@ -118,8 +118,8 @@
 \includegraphics[height=4.3cm]{figures/logo.png}
 
 \vspace{0.7cm}
-{\LARGE \bfseries BÁO CÁO MÔN}\\[0.35cm]
-{\LARGE \bfseries HỆ HỖ TRỢ QUYẾT ĐỊNH}
+{\LARGE \bfseries BÁO CÁO}\\[0.35cm]
+{\LARGE \bfseries ĐỒ ÁN 1}
 
 \vfill
 
@@ -132,10 +132,10 @@ TỐI ƯU HÓA TỒN KHO}\\[0.4cm]
 
 \vfill
 
-{\large \textbf{GVHD:} Trần Ngọc Thăng, Lê Hải Hà}
+{\large \textbf{GVHD:} TS. Nguyễn Hữu Du}
 
 \vspace{0.55cm}
-{\large \textbf{Nhóm sinh viên thực hiện: Lớp 169317}}
+{\large \textbf{Sinh viên thực hiện: Lớp 169317}}
 
 \vspace{0.3cm}
 {\renewcommand{\arraystretch}{1.35}
@@ -143,7 +143,6 @@ TỐI ƯU HÓA TỒN KHO}\\[0.4cm]
 \textit{Họ và tên} \hspace{2.5cm} & \textit{MSSV} \\
 \hline
 Nguyễn Trường Giang & 20227044 \\
-Đinh Hải Phong & 20210983 \\
 \end{tabular}}
 
 \vfill
@@ -252,7 +251,7 @@ Hạn chế/rủi ro/điều kiện? & Tập test nhỏ, dự báo đệ quy, đ
 
 \section{Cấu trúc báo cáo}
 
-Báo cáo gồm 6 chương: Chương 2 trình bày cơ sở lý thuyết (các mô hình dự báo và tối ưu tồn kho); Chương 3 mô tả dữ liệu, tiền xử lý và phương pháp; Chương 4 trình bày kết quả thực nghiệm, \textit{so sánh các mô hình} và khuyến nghị quyết định; Chương 5 nêu hạn chế và định hướng phát triển; Chương 6 trình bày phân công công việc.
+Báo cáo gồm 6 chương: Chương 2 trình bày cơ sở lý thuyết (các mô hình dự báo và tối ưu tồn kho); Chương 3 mô tả dữ liệu, tiền xử lý và phương pháp; Chương 4 trình bày kết quả thực nghiệm, \textit{so sánh các mô hình} và khuyến nghị quyết định; Chương 5 nêu hạn chế và định hướng phát triển; Chương 6 trình bày khối lượng công việc thực hiện.
 
 % ==================== CHƯƠNG 2 ====================
 \chapter{Cơ sở lý thuyết}
@@ -1215,35 +1214,33 @@ Báo cáo đã xây dựng thành công một hệ hỗ trợ quyết định đ
   \item Mở rộng mô hình tồn kho sang bài toán đa sản phẩm với ràng buộc ngân sách và không gian kho.
 \end{itemize}
 
-% ==================== CHƯƠNG 6: PHÂN CÔNG ====================
-\chapter{Phân công công việc}
+% ==================== CHƯƠNG 6: KHOI LUONG CONG VIEC ====================
+\chapter{Khối lượng công việc thực hiện}
 
-Nhóm gồm hai thành viên, phân công và đóng góp như Bảng~\ref{tab:phancong}. Minh chứng cụ thể (commit, notebook, hình/bảng trong báo cáo) được liệt kê ở cột cuối.
+Đồ án do một sinh viên thực hiện toàn bộ. Các hạng mục công việc chính cùng minh chứng tương ứng (mã nguồn, hình/bảng trong báo cáo) được liệt kê ở Bảng~\ref{tab:phancong}.
 
 \begin{table}[H]
 \centering
-\caption{Bảng phân công công việc và đóng góp cá nhân}
+\caption{Khối lượng công việc và minh chứng}
 \label{tab:phancong}
 \renewcommand{\arraystretch}{1.35}
-\begin{tabular}{|>{\raggedright\arraybackslash}p{0.20\linewidth}|>{\raggedright\arraybackslash}p{0.40\linewidth}|c|>{\raggedright\arraybackslash}p{0.20\linewidth}|}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{0.58\linewidth}|>{\raggedright\arraybackslash}p{0.32\linewidth}|}
 \hline
 \rowcolor{gray!18}
-\textbf{Thành viên} & \textbf{Công việc chính} & \textbf{Đóng góp} & \textbf{Minh chứng} \\
+\textbf{Hạng mục công việc} & \textbf{Minh chứng} \\
 \hline
-Nguyễn Trường Giang (20227044)
-  & Xây dựng mô hình dự báo (RevIN, N-BEATS, các mô hình so sánh), huấn luyện, tối ưu Optuna, so sánh kiến trúc, ứng dụng web.
-  & 50\%
-  & \texttt{src/}, \texttt{app/}, hình 4.1-4.4, bảng 4.2 \\
+Thu thập, tiền xử lý dữ liệu và phân tích khám phá (EDA) & \texttt{Data/}, EDA (Ch.~3) \\
 \hline
-Đinh Hải Phong (20210983)
-  & Thu thập \& tiền xử lý dữ liệu, phân tích khám phá (EDA), mô hình tối ưu tồn kho (Newsvendor, EOQ), viết và hoàn thiện báo cáo.
-  & 50\%
-  & \texttt{Data/}, EDA (Ch.~3), \texttt{inventory.py}, báo cáo \\
+Xây dựng mô hình dự báo (RevIN, N-BEATS) và 4 mô hình so sánh; huấn luyện, tối ưu siêu tham số bằng Optuna, so sánh top-5 & \texttt{src/}, hình 4.1--4.4, bảng 4.2 \\
+\hline
+Mô hình tối ưu tồn kho (Newsvendor, EOQ) & \texttt{inventory.py} \\
+\hline
+Triển khai ứng dụng web và viết báo cáo & \texttt{app/}, báo cáo \\
 \hline
 \end{tabular}
 \end{table}
 
-\textit{Ghi chú: tỉ lệ đóng góp và phân công ở trên là đề xuất, nhóm điều chỉnh theo thực tế trước khi nộp.}
+Sinh viên thực hiện: \textbf{Nguyễn Trường Giang} (MSSV 20227044), lớp 169317.
 
 % ==================== TÀI LIỆU THAM KHẢO ====================
 \bibliographystyle{plainnat}
@@ -1443,7 +1440,7 @@ class _NHITSBlock(nn.Module):
 % ==================== PHỤ LỤC C: KHAI BÁO AI ====================
 \chapter{Khai báo sử dụng AI}
 
-Nhóm có sử dụng công cụ AI hỗ trợ trong quá trình thực hiện, tuân thủ quy định của học phần. Chi tiết ở Bảng~\ref{tab:ai}. Nhóm \textbf{chịu trách nhiệm hoàn toàn} về tính chính xác của nội dung, kết quả phân tích và khuyến nghị; mọi kết quả số đều được kiểm chứng bằng cách chạy lại mã nguồn.
+Sinh viên có sử dụng công cụ AI hỗ trợ trong quá trình thực hiện, tuân thủ quy định của học phần. Chi tiết ở Bảng~\ref{tab:ai}. Sinh viên \textbf{chịu trách nhiệm hoàn toàn} về tính chính xác của nội dung, kết quả phân tích và khuyến nghị; mọi kết quả số đều được kiểm chứng bằng cách chạy lại mã nguồn.
 
 \begin{table}[H]
 \centering
@@ -1462,7 +1459,7 @@ Claude (Anthropic) & Rà soát chính tả, diễn đạt tiếng Việt trong b
 \end{tabular}
 \end{table}
 
-Phần \textbf{không} dùng AI tạo tự động: thiết kế bài toán, lựa chọn phương pháp, diễn giải kết quả và các khuyến nghị quyết định - đây là phần do nhóm tự thực hiện dựa trên dữ liệu và kết quả mô hình.
+Phần \textbf{không} dùng AI tạo tự động: thiết kế bài toán, lựa chọn phương pháp, diễn giải kết quả và các khuyến nghị quyết định - đây là phần do sinh viên tự thực hiện dựa trên dữ liệu và kết quả mô hình.
 
 % ==================== PHỤ LỤC D: TỰ CHẤM ====================
 \chapter{Bảng tự chấm điểm}
