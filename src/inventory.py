@@ -134,6 +134,42 @@ def newsvendor(quantile_levels, quantile_values, underage_cost: float, overage_c
     )
 
 
+def rq_total_cost(mu_D: float, sigma_D: float, c_s: float, holding: float,
+                  ordering: float, lead_time: float) -> tuple[float, dict]:
+    """Tong chi phi cua chinh sach ra soat lien tuc (r, q) duoi nhu cau bat dinh.
+
+    Theo bai bao RevIN-TSMixer (Nguyen et al., ESWA 2026), cong thuc (14)-(22):
+      - EOQ: Q* = sqrt(2 * mu_D * o / h)
+      - Muc phuc vu suy ra tu chi phi: alpha = 1 - h*Q*/(c_s * mu_D)
+      - z = Phi^{-1}(alpha); SS = z * sigma_D * sqrt(L); r = mu_D*L + SS
+      - Thieu hang ky vong qua ham ton that chuan: L(z) = phi(z) - z*(1-Phi(z))
+        E(S) = L(z) * sigma_D * sqrt(L);  E(c_s) = c_s * E(S) * mu_D / Q*
+      - TC = chi phi dat (c_o) + chi phi luu kho (c_h) + chi phi thieu (E(c_s))
+
+    mu_D: nhu cau du bao trung binh/thang; sigma_D: do lech chuan SAI SO du bao
+    (cang nho = du bao cang tot -> SS va TC cang thap). Tra ve (TC, chi tiet).
+    """
+    if mu_D <= 0 or sigma_D < 0 or holding <= 0 or ordering <= 0 or c_s <= 0:
+        return float("inf"), {}
+    Q = float(np.sqrt(2.0 * mu_D * ordering / holding))
+    alpha = 1.0 - holding * Q / (c_s * mu_D)
+    alpha = min(max(alpha, 1e-3), 1.0 - 1e-3)
+    z = float(norm.ppf(alpha))
+    ss = z * sigma_D * np.sqrt(lead_time)
+    r = mu_D * lead_time + ss
+    loss_z = float(norm.pdf(z) - z * (1.0 - norm.cdf(z)))   # ham ton that chuan
+    e_short = loss_z * sigma_D * np.sqrt(lead_time)
+    c_o = (mu_D / Q) * ordering
+    c_h = (Q / 2.0 + max(ss, 0.0)) * holding
+    e_cs = c_s * e_short * mu_D / Q
+    tc = c_o + c_h + e_cs
+    return float(tc), {
+        "Q": Q, "alpha": alpha, "z": z, "safety_stock": ss, "reorder_point": r,
+        "expected_shortage": e_short, "ordering_cost": c_o, "holding_cost": c_h,
+        "expected_shortage_cost": e_cs, "total_cost": tc,
+    }
+
+
 def cost_curve(inp: InventoryInputs, q_min_ratio: float = 0.3, q_max_ratio: float = 3.0, n: int = 200):
     """Duong cong tong chi phi nam theo Q, de ve bieu do minh hoa."""
     res = optimize(inp)

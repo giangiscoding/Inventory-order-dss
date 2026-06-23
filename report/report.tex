@@ -997,6 +997,45 @@ DLinear (đa biến) & 4.854 $\pm$ 1.406 & 1,42 & 1.498 & \textbf{2.380} \\
 
 \textbf{Kết luận so sánh:} ngay cả khi tinh chỉnh siêu tham số công bằng cho từng mô hình, \textbf{N-BEATS thực sự là mô hình tốt nhất} - dẫn đầu mọi chỉ số với biên độ rõ rệt. Đây là cơ sở khách quan để chọn N-BEATS làm mô hình triển khai. DLinear và TSMixer đa biến là các phương án cực gọn nhẹ đáng cân nhắc khi cần mô hình nhỏ và có sẵn biến ngoại sinh ổn định.
 
+\section{Tối ưu siêu tham số theo tổng chi phí và bài học}
+\label{sec:costopt}
+
+Bài báo nguồn của nhóm tác giả (Nguyễn và cộng sự \cite{nguyen2026revintsmixer}) đề xuất một ý tưởng hấp dẫn: thay vì tinh chỉnh mô hình dự báo theo \textit{sai số} (Kịch bản 1), hãy tinh chỉnh siêu tham số để \textbf{giảm trực tiếp tổng chi phí tồn kho} (Kịch bản 2), với lập luận ``dự báo chính xác nhất chưa chắc cho quyết định rẻ nhất''. Chúng tôi đã \textbf{tự cài đặt và kiểm chứng} ý tưởng này trên dữ liệu của mình.
+
+Tổng chi phí được tính theo chính sách rà soát liên tục $(r,q)$ như bài báo: cỡ lô $Q^* = \sqrt{2\mu_D o/h}$; mức phục vụ suy từ chi phí $\alpha = 1 - hQ^*/(c_s\mu_D)$; $z = \Phi^{-1}(\alpha)$; tồn kho an toàn $\text{SS} = z\,\sigma_D\sqrt{L}$; và $TC = c_o + c_h + \mathbb{E}(c_s)$ gồm chi phí đặt, lưu kho và thiếu hàng kỳ vọng. Cấu trúc chi phí: $h=4.000$ đ/đơn vị/tháng, $o=500.000$ đ/lần, $L=2$ tháng. Như bài báo, chúng tôi \textbf{quét chi phí thiếu hàng $c_s$ trên một dải} (từ 300 đến 60.000 đ/đơn vị) và lấy $TC_{\min}$. Optuna (100 trial) tối ưu N-BEATS theo $TC_{\min}$ trên validation (Kịch bản 2) so với theo pinball loss (Kịch bản 1).
+
+\begin{table}[H]
+\centering
+\caption{N-BEATS tinh chỉnh theo sai số (S1) vs theo tổng chi phí (S2), đánh giá trên test (công thức $(r,q)$ của bài báo, $\sigma_D$ = độ lệch chuẩn nhu cầu, $TC_{\min}$ sau khi quét $c_s$).}
+\label{tab:costopt}
+\begin{tabular}{|l|r|r|}
+\hline
+\rowcolor{gray!18}
+Kịch bản tinh chỉnh & MAPE (\%) & $TC_{\min}$ (test) \\
+\hline
+\textbf{S1: tối ưu sai số (pinball)} & \textbf{1,12} & 433 triệu \\
+S2: tối ưu tổng chi phí & 4,86 & 430 triệu \\
+\hline
+\end{tabular}
+\end{table}
+
+\textbf{Phát hiện (trung thực, ngược với kỳ vọng từ bài báo):} trên dữ liệu của chúng tôi, tối ưu theo tổng chi phí \textit{không} mang lại lợi ích - $TC_{\min}$ gần như không đổi (chênh 0,8\%) trong khi MAPE \textit{xấu đi gấp 4 lần} (Hình~\ref{fig:costopt}). Hai đường cong chi phí của S1 và S2 gần như trùng khít. Có hai nguyên nhân được xác định rõ:
+\begin{itemize}
+  \item \textbf{Tín hiệu chi phí quá yếu để chọn siêu tham số.} Với $\sigma_D$ = độ lệch chuẩn nhu cầu (như bài báo), $TC$ bị chi phối bởi số hạng tồn kho an toàn $\propto \sigma_D$ - vốn \textit{gần như không phụ thuộc} chất lượng dự báo. Mọi cấu hình cho $TC$ xấp xỉ nhau, nên Optuna không phân biệt được và bộ ``tốt nhất'' theo chi phí lại có độ chính xác rất kém.
+  \item \textbf{Tập validation quá nhỏ.} $TC_{\min}$ là một con số vô hướng tính trên 12 điểm validation - quá nhiễu để chọn siêu tham số đáng tin (tương tự hiện tượng val$\neq$test ở mục~\ref{sec:top5}). Khi thử biến thể $\sigma_D$ = độ lệch chuẩn \textit{sai số dự báo}, Kịch bản 2 \textit{quá khớp} validation và còn cho chi phí test cao hơn S1.
+\end{itemize}
+
+Lưu ý: ở thang chi phí của ta, đường cong $TC$ theo $c_s$ \textit{đơn điệu tăng} (không có hình chữ U như Fig.~12 của bài báo) vì $c_s$ trong bài dùng đơn vị chuẩn hóa khác; điều này không ảnh hưởng đến kết luận.
+
+Trái lại, \textbf{pinball loss là tín hiệu dày} (7 phân vị $\times$ 12 điểm) nên chọn siêu tham số ổn định; và vì dự báo tốt hơn nên cũng cho chi phí thấp hơn (hoặc tương đương). \textbf{Bài học:} với bài toán dữ liệu nhỏ, đơn sản phẩm như đây, nên tinh chỉnh theo sai số phân vị; tối ưu theo chi phí tuy hợp lý về ý tưởng nhưng cần dữ liệu/validation đủ lớn (như trong bài báo gốc) mới phát huy. Vì vậy chúng tôi giữ N-BEATS tinh chỉnh theo pinball làm mô hình triển khai.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{figures/cost_opt.png}
+  \caption{N-BEATS: tinh chỉnh theo sai số (S1) vs theo tổng chi phí (S2). S2 cho tổng chi phí gần như không đổi nhưng MAPE tệ hơn nhiều - tối ưu theo chi phí không hiệu quả trên dữ liệu nhỏ.}
+  \label{fig:costopt}
+\end{figure}
+
 \section{Hiệu chỉnh phân vị (Calibration)}
 
 Hiệu chỉnh (calibration) kiểm tra xem mô hình dự báo phân vị có \textit{đáng tin về mặt xác suất} không: khi mô hình nói ``P90'', có thực sự khoảng 90\% giá trị thực tế nằm dưới mức đó?
@@ -1242,6 +1281,11 @@ Nahmias, S. (2011).
 \newblock \textit{Perishable Inventory Systems}.
 \newblock Springer.
 
+\bibitem{nguyen2026revintsmixer}
+Nguyen, T.~N.~A., Nguyen, T.~X.~H., Tran, N.~T., Nguyen, T.~H., và Vu, H.~A. (2026).
+\newblock Optimizing supply chain operations using advanced Time-Series Mixer models for demand forecasting and inventory under uncertain demand.
+\newblock \textit{Expert Systems With Applications}, 296, 128955.
+
 \bibitem{zeng2023dlinear}
 Zeng, A., Chen, M., Zhang, L., và Xu, Q. (2023).
 \newblock Are transformers effective for time series forecasting?
@@ -1282,7 +1326,8 @@ Inventory-order-dss/
 |   +- compare_models.py    (so sanh cau hinh co dinh chung - tham khao)
 |   +- compare_hparams.py   (top-5 bo sieu tham so N-BEATS)
 |   +- evaluate.py          (MAE/RMSE/MAPE + pinball + coverage)
-|   +- inventory.py         (newsvendor + EOQ)
+|   +- tune_cost.py         (tinh chinh theo tong chi phi - Scenario 2)
+|   +- inventory.py         (newsvendor + EOQ + (r,q) total cost)
 +- models/
 |   +- best_model.pt        (checkpoint cuoi)
 |   +- best_params.json     (sieu tham so toi uu)
@@ -1302,6 +1347,7 @@ Lệnh chạy chính:
 \begin{verbatim}
 python -m src.tune_all 100 3       # Optuna rieng tung mo hinh (so sanh cong bang)
 python -m src.deploy_nbeats        # trien khai N-BEATS tot nhat -> forecast.json
+python -m src.tune_cost 100 3      # toi uu theo tong chi phi (Scenario 2)
 python -m src.make_report_figures  # sinh hinh fig1 + res1-5
 python -m src.compare_hparams 100 5 # top-5 sieu tham so N-BEATS
 streamlit run app/app.py           # ung dung ky thuat
