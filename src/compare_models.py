@@ -19,10 +19,12 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from .data_loader import ROOT, WindowDataset, load_series, split_indices
+from .data_loader import (ROOT, MultiWindowDataset, WindowDataset, load_multivariate,
+                          load_series, split_indices)
 from .evaluate import (all_metrics, coverage, mae, mape, naive_forecast,
                        pinball_loss, rmse, seasonal_naive_forecast, smape)
-from .models import DEFAULT_QUANTILES, build_model
+from .models import (DEFAULT_QUANTILES, MULTIVARIATE_MODELS, build_model,
+                     build_model_multi)
 from .train import pinball_loss_torch, predict_quantiles
 
 HORIZON = 1
@@ -51,21 +53,37 @@ def count_params(model) -> int:
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
 
-def train_one(name, series_scaled, train_range, val_range, seed):
-    """Huan luyen 1 mo hinh, early stopping theo pinball loss tren val.
-    Tra ve (model, best_epoch)."""
+def _make_dataset(name, data, t_range):
+    """Tao dataset + thong tin descale tuy mo hinh don bien hay da bien."""
+    if name in MULTIVARIATE_MODELS:
+        ds = MultiWindowDataset(data["Xs"], COMMON["lookback"], HORIZON, t_range)
+        return ds, data["target_std"]      # descale = x target_std
+    ds = WindowDataset(data["ys"], COMMON["lookback"], HORIZON, t_range)
+    return ds, data["scale"]               # descale = x scale (train mean)
+
+
+def _build(name, n_features):
+    if name in MULTIVARIATE_MODELS:
+        return build_model_multi(name, COMMON["lookback"], n_features, HORIZON, len(QUANTILES),
+                                 hidden_size=COMMON["hidden_size"], n_layers=COMMON["n_layers"],
+                                 dropout=COMMON["dropout"], revin_affine=COMMON["revin_affine"])
+    return build_model(name, COMMON["lookback"], HORIZON, len(QUANTILES),
+                       hidden_size=COMMON["hidden_size"], n_layers=COMMON["n_layers"],
+                       dropout=COMMON["dropout"], revin_affine=COMMON["revin_affine"])
+
+
+def train_one(name, data, train_range, val_range, seed):
+    """Huan luyen 1 mo hinh (don bien hoac da bien), early stopping theo pinball
+    loss tren val. Tra ve (model, best_epoch)."""
     torch.manual_seed(seed)
     np.random.seed(seed)
     q_tensor = torch.tensor(QUANTILES, dtype=torch.float32)
-    lookback = COMMON["lookback"]
 
-    train_ds = WindowDataset(series_scaled, lookback, HORIZON, train_range)
-    val_ds = WindowDataset(series_scaled, lookback, HORIZON, val_range)
+    train_ds, _ = _make_dataset(name, data, train_range)
+    val_ds, _ = _make_dataset(name, data, val_range)
     loader = DataLoader(train_ds, batch_size=COMMON["batch_size"], shuffle=True)
 
-    model = build_model(name, lookback, HORIZON, len(QUANTILES),
-                        hidden_size=COMMON["hidden_size"], n_layers=COMMON["n_layers"],
-                        dropout=COMMON["dropout"], revin_affine=COMMON["revin_affine"])
+    model = _build(name, data["n_features"])
     opt = torch.optim.Adam(model.parameters(), lr=COMMON["learning_rate"])
 
     best_val, best_state, best_epoch, no_improve = float("inf"), None, 0, 0
@@ -90,11 +108,11 @@ def train_one(name, series_scaled, train_range, val_range, seed):
     return model, best_epoch
 
 
-def evaluate_on_test(model, series_scaled, test_range, scale):
-    test_ds = WindowDataset(series_scaled, COMMON["lookback"], HORIZON, test_range)
+def evaluate_on_test(model, name, data, test_range):
+    test_ds, descale = _make_dataset(name, data, test_range)
     yt_s, yp_q_s = predict_quantiles(model, test_ds)
-    yt = yt_s * scale
-    yp_q = yp_q_s * scale
+    yt = yt_s * descale
+    yp_q = yp_q_s * descale
     yp_med = yp_q[:, MEDIAN_IDX]
     m = all_metrics(yt, yp_med)
     m["PinballLoss"] = pinball_loss(yt, yp_q, QUANTILES)
@@ -109,6 +127,18 @@ def main(n_seeds: int = 3) -> None:
     train_end, val_end = split_indices(n)
     scale = float(y[:train_end].mean())
     ys = y / scale
+
+    # Du lieu da bien cho TSMixer/DLinear: Quantity + 6 ngoai sinh |r| cao nhat.
+    # Scale tung cot bang do lech chuan tap train (de O(1)); descale muc tieu = x target_std.
+    Xmv, top_exog, _ = load_multivariate(k=6)
+    col_std = Xmv[:train_end].std(axis=0)
+    col_std[col_std == 0] = 1.0
+    Xs = Xmv / col_std
+    data = {
+        "ys": ys, "scale": scale,
+        "Xs": Xs, "target_std": float(col_std[0]), "n_features": Xmv.shape[1],
+    }
+    print(f"Bien ngoai sinh da bien (top-6 |r|): {top_exog}")
 
     results = {}          # name -> {metrics mean/std, params, ...}
     test_curves = {}      # name -> median forecast (last seed) for plotting
@@ -139,10 +169,10 @@ def main(n_seeds: int = 3) -> None:
         n_params = None
         t0 = time.time()
         for seed in seeds:
-            model, best_epoch = train_one(name, ys, (0, train_end), (train_end, val_end), seed)
+            model, best_epoch = train_one(name, data, (0, train_end), (train_end, val_end), seed)
             if n_params is None:
                 n_params = count_params(model)
-            m, cov, yt, yp_med, yp_q = evaluate_on_test(model, ys, (val_end, n), scale)
+            m, cov, yt, yp_med, yp_q = evaluate_on_test(model, name, data, (val_end, n))
             for k in runs:
                 runs[k].append(m[k])
             covs.append([cov[f"{q:.2f}"] for q in QUANTILES])
@@ -163,6 +193,8 @@ def main(n_seeds: int = 3) -> None:
 
     payload = {
         "protocol": COMMON,
+        "multivariate_models": MULTIVARIATE_MODELS,
+        "multivariate_features": ["Quantity"] + top_exog,
         "quantiles": QUANTILES,
         "seeds": seeds,
         "test_months": months[val_end:].strftime("%Y-%m").tolist(),

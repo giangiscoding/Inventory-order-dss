@@ -192,33 +192,33 @@
 \end{frame}
 
 \begin{frame}{Tự cài đặt \& so sánh 5 kiến trúc}
-  Cùng giao thức (cấu hình, pinball loss, 3 hạt giống) --- chỉ khác \emph{phần lõi}:
-  \vspace{0.2cm}
+  Cùng giao thức (3 hạt giống); MLP/NHITS/N-BEATS \emph{đơn biến}, DLinear/TSMixer \emph{đa biến} (+6 ngoại sinh):
+  \vspace{0.15cm}
   \begin{columns}[c]
-    \begin{column}{0.46\textwidth}
+    \begin{column}{0.5\textwidth}
       \scriptsize
       \begin{tabular}{lrr}
         \toprule
-        Mô hình & MAE & MAPE \\
+        Mô hình & MAE & Pinball \\
         \midrule
-        Naive          & 80.045 & 23,6\% \\
-        TSMixer        & 22.186 & 6,2\% \\
-        DLinear        & 21.450 & 6,0\% \\
-        NHITS          & 7.722  & 2,2\% \\
-        MLP            & 6.203  & \textbf{1,8\%} \\
-        \textbf{N-BEATS} & \textbf{6.234} & 1,8\% \\
+        Naive             & 80.045 & -- \\
+        DLinear \tiny(đa biến) & 12.598 & 3.841 \\
+        NHITS             & 7.722  & 2.235 \\
+        MLP               & \textbf{6.203} & 2.026 \\
+        TSMixer \tiny(đa biến) & 6.339 & 1.919 \\
+        \textbf{N-BEATS}  & 6.234 & \textbf{1.868} \\
         \bottomrule
       \end{tabular}
       \vspace{0.2cm}
       \par{\scriptsize (test 24 tháng, giao thức chung)}
     \end{column}
-    \begin{column}{0.54\textwidth}
+    \begin{column}{0.5\textwidth}
       \includegraphics[width=\linewidth]{cmp1_mae_mape}
     \end{column}
   \end{columns}
-  \vspace{0.15cm}
-  {\small \textbf{N-BEATS và MLP mạnh nhất, gần như ngang nhau}; DLinear/TSMixer
-  (thiết kế cho dài hạn/đa biến) kém hơn trên bài toán đơn biến này.}
+  \vspace{0.1cm}
+  {\small \textbf{4 mô hình tốt nhất gần như ngang nhau}. TSMixer nhờ \textbf{6 biến ngoại sinh}
+  cải thiện vọt (MAE 22k$\to$6,3k) và cực gọn ($\sim$14,6k tham số).}
 \end{frame}
 
 % ============================================================
@@ -353,7 +353,7 @@
       \begin{itemize}\small
         \item Tập test còn nhỏ (24 điểm).
         \item Dự báo đệ quy tích lũy sai số.
-        \item Mới dùng đơn biến (chưa khai thác biến ngoại sinh).
+        \item Mô hình triển khai đơn biến (đa biến để dành mở rộng).
       \end{itemize}
     \end{column}
     \begin{column}{0.5\textwidth}

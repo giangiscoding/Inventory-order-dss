@@ -217,4 +217,116 @@ def build_model(name: str, lookback: int, horizon: int, n_quantiles: int,
     return RevinForecaster(core, revin_affine=revin_affine)
 
 
+# ===========================================================================
+# PHIEN BAN DA BIEN (multivariate) cho TSMixer va DLinear
+# Input (B, L, F): F = 1 (Quantity) + k bien ngoai sinh tuong quan cao nhat.
+# Du bao phan vi cua RIENG bien muc tieu (cot 0).
+# ===========================================================================
+class RevINMulti(nn.Module):
+    """RevIN da kenh: chuan hoa moi kenh theo mean/std cua chinh no trong cua so
+    (instance). Dao nguoc CHI cho kenh muc tieu (target_idx) khi xuat phan vi."""
+
+    def __init__(self, n_features: int, target_idx: int = 0, affine: bool = False,
+                 eps: float = 1e-5):
+        super().__init__()
+        self.target_idx = target_idx
+        self.affine = affine
+        self.eps = eps
+        if affine:
+            self.gamma = nn.Parameter(torch.ones(n_features))
+            self.beta = nn.Parameter(torch.zeros(n_features))
+
+    def normalize(self, x: torch.Tensor) -> torch.Tensor:  # x: (B, L, F)
+        self._mean = x.mean(dim=1, keepdim=True).detach()                       # (B,1,F)
+        self._std = torch.sqrt(x.var(dim=1, keepdim=True, unbiased=False) + self.eps).detach()
+        out = (x - self._mean) / self._std
+        if self.affine:
+            out = out * self.gamma + self.beta
+        return out
+
+    def denormalize_target(self, y: torch.Tensor) -> torch.Tensor:  # y: (B, H, Q)
+        i = self.target_idx
+        if self.affine:
+            y = (y - self.beta[i]) / (self.gamma[i] + self.eps)
+        m = self._mean[:, :, i:i + 1]      # (B,1,1)
+        s = self._std[:, :, i:i + 1]
+        return y * s + m
+
+
+class _TSMixerCoreMulti(nn.Module):
+    """TSMixer da bien: time-mixing + feature-mixing tren (B, L, F) (F kenh thuc
+    su) -> phan vi cua bien muc tieu."""
+
+    def __init__(self, lookback, n_features, horizon, n_quantiles, hidden, n_layers, dropout):
+        super().__init__()
+        self.horizon, self.n_quantiles = horizon, n_quantiles
+        self.blocks = nn.ModuleList(
+            _TSMixerBlock(lookback, n_features, hidden, dropout) for _ in range(n_layers)
+        )
+        self.head = nn.Linear(lookback * n_features, horizon * n_quantiles)
+
+    def forward(self, x):  # (B, L, F)
+        for blk in self.blocks:
+            x = blk(x)
+        h = x.reshape(x.shape[0], -1)
+        return monotone_quantiles(self.head(h), self.horizon, self.n_quantiles)
+
+
+class _DLinearCoreMulti(nn.Module):
+    """DLinear da bien: phan ra trend/season tung kenh, tron tat ca kenh qua hai
+    lop tuyen tinh -> phan vi cua bien muc tieu."""
+
+    def __init__(self, lookback, n_features, horizon, n_quantiles, kernel_size=13, **_):
+        super().__init__()
+        self.horizon, self.n_quantiles = horizon, n_quantiles
+        self.kernel = min(kernel_size if kernel_size % 2 == 1 else kernel_size - 1,
+                          lookback if lookback % 2 == 1 else lookback - 1)
+        out = horizon * n_quantiles
+        self.linear_trend = nn.Linear(lookback * n_features, out)
+        self.linear_season = nn.Linear(lookback * n_features, out)
+
+    def _moving_avg(self, x):  # (B, L, F) -> trend (B, L, F)
+        pad = (self.kernel - 1) // 2
+        xt = x.transpose(1, 2)                              # (B, F, L)
+        xp = F.pad(xt, (pad, pad), mode="replicate")
+        tr = F.avg_pool1d(xp, self.kernel, stride=1)       # (B, F, L)
+        return tr.transpose(1, 2)
+
+    def forward(self, x):  # (B, L, F)
+        trend = self._moving_avg(x)
+        season = x - trend
+        b = x.shape[0]
+        out = self.linear_trend(trend.reshape(b, -1)) + self.linear_season(season.reshape(b, -1))
+        return monotone_quantiles(out, self.horizon, self.n_quantiles)
+
+
+class RevinForecasterMulti(nn.Module):
+    """RevINMulti.normalize -> core da bien -> denormalize kenh muc tieu."""
+
+    def __init__(self, core: nn.Module, n_features: int, revin_affine: bool = False):
+        super().__init__()
+        self.revin = RevINMulti(n_features, target_idx=0, affine=revin_affine)
+        self.core = core
+
+    def forward(self, x):  # (B, L, F)
+        xn = self.revin.normalize(x)
+        return self.revin.denormalize_target(self.core(xn))
+
+
+def build_model_multi(name: str, lookback: int, n_features: int, horizon: int,
+                      n_quantiles: int, hidden_size: int = 256, n_layers: int = 3,
+                      dropout: float = 0.1, revin_affine: bool = False, **kw) -> nn.Module:
+    name = name.lower()
+    if name == "tsmixer":
+        core = _TSMixerCoreMulti(lookback, n_features, horizon, n_quantiles,
+                                 hidden_size, n_layers, dropout)
+    elif name == "dlinear":
+        core = _DLinearCoreMulti(lookback, n_features, horizon, n_quantiles,
+                                 kernel_size=kw.get("kernel_size", 13))
+    else:
+        raise ValueError(f"Mo hinh da bien khong ho tro: {name}")
+    return RevinForecasterMulti(core, n_features, revin_affine=revin_affine)
+
+
+MULTIVARIATE_MODELS = ["TSMixer", "DLinear"]
 MODEL_NAMES = ["MLP", "DLinear", "TSMixer", "NHITS", "NBEATS"]
