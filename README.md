@@ -4,7 +4,7 @@
 
 1. **Dự báo nhu cầu đa phân vị** bằng **RevIN + N-BEATS** (tự xây dựng bằng PyTorch) — cho cả *phân phối* nhu cầu thay vì một con số.
 2. **So sánh công bằng 5 kiến trúc** dự báo (MLP, DLinear, TSMixer, NHITS, N-BEATS) — mỗi mô hình được Optuna tinh chỉnh riêng.
-3. **Tối ưu tồn kho** bằng **Newsvendor** (tỷ lệ tới hạn) + **EOQ** (cỡ lô, safety stock, điểm đặt lại).
+3. **Tối ưu tồn kho** bằng mô hình **rà soát liên tục (r,q)** — kết hợp Newsvendor (tỷ lệ tới hạn → mức phục vụ, safety stock, điểm đặt lại) và EOQ (cỡ lô).
 4. **Hai web app Streamlit** (bản kỹ thuật + bản kinh doanh) cho khuyến nghị đặt hàng.
 
 ## 1. Dữ liệu

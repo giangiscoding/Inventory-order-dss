@@ -73,8 +73,8 @@
     \begin{column}{0.5\textwidth}
       \textbf{Quyết định cần hỗ trợ}
       \begin{itemize}
-        \item Lượng hàng đặt thêm cho tháng tới \,(\textbf{Newsvendor}).
-        \item Cỡ lô \& điểm đặt lại dài hạn \,(\textbf{EOQ}).
+        \item Lượng đặt, cỡ lô, điểm đặt lại, tồn kho an toàn.
+        \item Thống nhất trong mô hình \textbf{$(r,q)$} (Newsvendor + EOQ).
       \end{itemize}
     \end{column}
   \end{columns}
@@ -96,7 +96,7 @@
     \node[box] (data) {Dữ liệu tháng\\(120 obs)};
     \node[box, right=of data, fill=accent!22] (model) {RevIN +\\N-BEATS};
     \node[box, right=of model] (dist) {Phân phối\\P5--P95};
-    \node[box, right=of dist, fill=orange!18] (nv) {Newsvendor\\/ EOQ};
+    \node[box, right=of dist, fill=orange!18] (nv) {Tồn kho\\$(r,q)$};
     \node[box, right=of nv, fill=orange!30] (dec) {Quyết định\\đặt hàng};
     \draw[arr] (data) -- (model);
     \draw[arr] (model) -- (dist);
@@ -278,15 +278,15 @@
 \section{Từ dự báo đến quyết định}
 % ============================================================
 
-\begin{frame}{Mô hình Newsvendor: phân vị tối ưu}
+\begin{frame}{Mô hình tồn kho $(r,q)$: tỷ lệ tới hạn}
   \begin{columns}[T]
     \begin{column}{0.5\textwidth}
-      Mức tồn kho tối ưu chính là \textbf{phân vị tại tỷ lệ tới hạn}:
-      \[ Q^* = F^{-1}(\CR), \quad \CR = \frac{\Cu}{\Cu + \Co} \]
+      Mức phục vụ tối ưu = \textbf{tỷ lệ tới hạn}; mức chuẩn bị = phân vị tại đó:
+      \[ \CR = \frac{\Cu}{\Cu + \Co}, \quad Q^* = F^{-1}(\CR) \]
       \vspace{-0.2cm}
       \begin{itemize}\small
-        \item Lãi cao ($\Cu$ lớn) $\Rightarrow \CR\!\to\!1 \Rightarrow$ chuẩn bị P90+.
-        \item Dễ ế ($\Co$ lớn) $\Rightarrow \CR\!\to\!0 \Rightarrow$ chuẩn bị thấp.
+        \item Lãi cao ($\Cu$ lớn) $\Rightarrow \CR\!\to\!1 \Rightarrow$ phục vụ cao (P90+).
+        \item $z=\Phi^{-1}(\CR) \Rightarrow$ SS $= z\sigma\sqrt{L}$, điểm đặt lại $r$; EOQ cho cỡ lô.
       \end{itemize}
       \vspace{0.15cm}
       {\footnotesize \textbf{Ví dụ 01/2025:} $\Cu{=}30k$, $\Co{=}4k \Rightarrow \CR{=}0{,}88$
@@ -371,8 +371,8 @@
   \begin{enumerate}
     \item \textbf{Dự báo đa phân vị} RevIN + N-BEATS tự triển khai, đạt MAPE
           \textbf{1,15\%} --- vượt baseline $\sim$20 lần; tinh chỉnh Optuna công bằng 5 kiến trúc.
-    \item \textbf{Kết nối dự báo $\rightarrow$ quyết định} qua Newsvendor: khuyến nghị
-          đặt hàng có cơ sở kinh tế, giải thích được.
+    \item \textbf{Kết nối dự báo $\rightarrow$ quyết định} qua mô hình $(r,q)$ (Newsvendor + EOQ):
+          khuyến nghị đặt hàng có cơ sở kinh tế, giải thích được.
     \item \textbf{Hai giao diện web} phục vụ cả kỹ thuật viên lẫn quản lý kinh doanh.
   \end{enumerate}
 \end{frame}

@@ -153,7 +153,7 @@ DỰA TRÊN DỰ BÁO CHUỖI THỜI GIAN\\[5pt]
 
 Về dự báo, mô hình \textbf{RevIN + N-BEATS} được tự xây dựng bằng PyTorch kết hợp chuẩn hóa theo thực thể đảo ngược (Reversible Instance Normalization - RevIN) và kiến trúc N-BEATS với đầu ra đa phân vị (P5, P10, P25, P50, P75, P90, P95). Mô hình được huấn luyện bằng hàm mất mát \textit{pinball loss} - tiêu chuẩn lý thuyết cho hồi quy phân vị - và tối ưu siêu tham số bằng thuật toán Optuna (100 thử nghiệm, TPE sampler). Dữ liệu là 120 quan sát tháng (2015-2024), chia theo chiến lược thời gian 7:1:2 (train 84, validation 12, test 24 tháng).
 
-Trên tập kiểm tra 24 tháng (2023-2024), mô hình đạt \textbf{MAE = 4.074, MAPE = 1,15\%}, vượt trội gần \textbf{20 lần} so với phương pháp cơ sở Naive (MAE = 80.045, MAPE = 23,59\%). Để so sánh \textit{công bằng}, em đã \textbf{tự cài đặt thêm bốn kiến trúc dự báo phân vị} (MLP, DLinear, TSMixer, NHITS) và \textbf{tinh chỉnh Optuna riêng cho từng mô hình} (mỗi mô hình 100 thử nghiệm); trong đó DLinear và TSMixer chạy \textbf{đa biến} với 6 biến ngoại sinh tương quan cao nhất. Kết quả: \textbf{N-BEATS tốt nhất rõ rệt} trên mọi chỉ số, tiếp đến là DLinear đa biến (cực gọn nhẹ). Về quyết định tồn kho, kết quả phân vị được đưa vào \textbf{mô hình Newsvendor} - tỷ lệ tới hạn $\CR = \Cu/(\Cu + \Co)$ xác định trực tiếp mức phân vị tối ưu cần chuẩn bị, mang ý nghĩa kinh tế rõ ràng mà dự báo điểm không thể hiện được. Mô hình \textbf{EOQ} bổ sung khuyến nghị cỡ lô cho vận hành dài hạn.
+Trên tập kiểm tra 24 tháng (2023-2024), mô hình đạt \textbf{MAE = 4.074, MAPE = 1,15\%}, vượt trội gần \textbf{20 lần} so với phương pháp cơ sở Naive (MAE = 80.045, MAPE = 23,59\%). Để so sánh \textit{công bằng}, em đã \textbf{tự cài đặt thêm bốn kiến trúc dự báo phân vị} (MLP, DLinear, TSMixer, NHITS) và \textbf{tinh chỉnh Optuna riêng cho từng mô hình} (mỗi mô hình 100 thử nghiệm); trong đó DLinear và TSMixer chạy \textbf{đa biến} với 6 biến ngoại sinh tương quan cao nhất. Kết quả: \textbf{N-BEATS tốt nhất rõ rệt} trên mọi chỉ số, tiếp đến là DLinear đa biến (cực gọn nhẹ). Về quyết định tồn kho, kết quả phân vị được đưa vào \textbf{mô hình tồn kho $(r,q)$} (kết hợp Newsvendor và EOQ): tỷ lệ tới hạn $\CR = \Cu/(\Cu + \Co)$ vừa là mức phân vị tối ưu cần chuẩn bị vừa là mức phục vụ xác định tồn kho an toàn và điểm đặt lại, còn EOQ cho cỡ lô - mang ý nghĩa kinh tế rõ ràng mà dự báo điểm không thể hiện được.
 
 Hệ thống được triển khai dưới dạng hai ứng dụng web Streamlit: bản kỹ thuật đầy đủ chỉ số và bản dành cho người dùng kinh doanh với ngôn ngữ đời thường.
 
@@ -176,7 +176,7 @@ Hầu hết các hệ thống thực tế vẫn dùng \textit{dự báo điểm}
 Báo cáo này đề xuất một hệ thống khép kín kết hợp:
 \begin{enumerate}
   \item Dự báo \textbf{đa phân vị} (quantile forecasting) bằng RevIN + N-BEATS - cung cấp \textit{cả phân phối} nhu cầu thay vì một con số.
-  \item Tối ưu hóa tồn kho bằng \textbf{mô hình Newsvendor} - dùng trực tiếp phân phối đó để tìm mức chuẩn bị tối ưu theo tiêu chí kinh tế.
+  \item Tối ưu hóa tồn kho bằng \textbf{mô hình $(r,q)$} (Newsvendor + EOQ) - dùng trực tiếp phân phối đó để tìm mức chuẩn bị, tồn kho an toàn và cỡ lô tối ưu theo tiêu chí kinh tế.
 \end{enumerate}
 
 \section{Bài toán ra quyết định và người dùng}
@@ -190,13 +190,13 @@ Báo cáo này đề xuất một hệ thống khép kín kết hợp:
   \item \textit{Nhân viên phân tích / kế hoạch cung ứng} - người cần xem chi tiết dự báo, độ tin cậy và các chỉ số kỹ thuật để hiệu chỉnh.
 \end{itemize}
 
-\textbf{Quyết định cần hỗ trợ:} (1) lượng hàng nên chuẩn bị cho tháng tới ứng với khẩu vị rủi ro/cấu trúc chi phí của doanh nghiệp (Newsvendor); (2) cỡ lô và điểm đặt hàng lại cho vận hành dài hạn (EOQ).
+\textbf{Quyết định cần hỗ trợ:} lượng hàng nên chuẩn bị, tồn kho an toàn, điểm đặt lại và cỡ lô - thống nhất trong mô hình tồn kho $(r,q)$ theo cấu trúc chi phí của doanh nghiệp.
 
 \section{Mục tiêu hỗ trợ ra quyết định}
 
 \begin{enumerate}
   \item Xây dựng mô hình dự báo chuỗi thời gian đa phân vị tự triển khai (RevIN + N-BEATS, PyTorch), tối ưu siêu tham số bằng Optuna; \textbf{so sánh với nhiều kiến trúc khác} để biện minh lựa chọn.
-  \item Kết nối đầu ra dự báo với mô hình Newsvendor để biến dự báo thành \textit{khuyến nghị đặt hàng cụ thể} có ý nghĩa kinh tế.
+  \item Kết nối đầu ra dự báo với mô hình tồn kho $(r,q)$ để biến dự báo thành \textit{khuyến nghị đặt hàng cụ thể} có ý nghĩa kinh tế.
   \item Triển khai hệ thống dưới dạng ứng dụng web tương tác (Streamlit) phục vụ hai nhóm người dùng: kỹ thuật viên phân tích và quản lý kinh doanh.
 \end{enumerate}
 
@@ -218,7 +218,7 @@ Bài toán thực tế là gì? & Đặt bao nhiêu hàng mỗi tháng dưới n
 \hline
 Ai dùng kết quả? & Quản lý kinh doanh và nhân viên phân tích cung ứng & \ref{sec:decision_problem} \\
 \hline
-Người dùng cần quyết định gì? & Lượng đặt thêm (Newsvendor) + cỡ lô/ROP (EOQ) & \ref{sec:decision_problem} \\
+Người dùng cần quyết định gì? & Lượng đặt, cỡ lô, điểm đặt lại - mô hình $(r,q)$ & \ref{sec:decision_problem} \\
 \hline
 Dữ liệu nào được dùng? & 120 quan sát tháng doanh số (2015-2024) + 10 biến vĩ mô & Ch.~3 \\
 \hline
@@ -237,7 +237,7 @@ Hạn chế/rủi ro/điều kiện? & Tập test nhỏ, dự báo đệ quy, đ
 
 \begin{itemize}
   \item \textbf{Dữ liệu:} chuỗi thời gian doanh số tháng thực tế, 120 quan sát (2015-2024), cùng 10 biến ngoại sinh vĩ mô.
-  \item \textbf{Đóng góp kỹ thuật:} (i) đầu ra đơn điệu đa phân vị qua tham số hóa softplus-cumsum, dùng chung cho mọi kiến trúc; (ii) chuẩn hóa RevIN 3D tương thích với tensor đầu ra $(\text{batch} \times \text{horizon} \times Q)$; (iii) \textbf{tự cài đặt và so sánh công bằng 5 kiến trúc} dự báo phân vị (MLP, DLinear, TSMixer, NHITS, N-BEATS), \textbf{mỗi mô hình tinh chỉnh Optuna riêng}; (iv) tích hợp mô hình Newsvendor từ phân vị rời rạc qua nội suy.
+  \item \textbf{Đóng góp kỹ thuật:} (i) đầu ra đơn điệu đa phân vị qua tham số hóa softplus-cumsum, dùng chung cho mọi kiến trúc; (ii) chuẩn hóa RevIN 3D tương thích với tensor đầu ra $(\text{batch} \times \text{horizon} \times Q)$; (iii) \textbf{tự cài đặt và so sánh công bằng 5 kiến trúc} dự báo phân vị (MLP, DLinear, TSMixer, NHITS, N-BEATS), \textbf{mỗi mô hình tinh chỉnh Optuna riêng}; (iv) tích hợp mô hình tồn kho $(r,q)$ (Newsvendor + EOQ) dùng trực tiếp dự báo phân vị.
   \item \textbf{Đóng góp ứng dụng:} hai giao diện web phục vụ hai đối tượng với ngôn ngữ và mức độ chi tiết khác nhau.
 \end{itemize}
 
@@ -397,50 +397,29 @@ Optuna \cite{akiba2019optuna} sử dụng thuật toán \textit{Tree-structured 
 
 \textit{MedianPruner} dừng sớm trial nếu giá trị mục tiêu tại bước hiện tại tệ hơn trung vị của các trial hoàn thành trước - tiết kiệm tài nguyên tính toán.
 
-\section{Mô hình Newsvendor}
+\section{Mô hình tồn kho rà soát liên tục $(r,q)$}
+\label{sec:inventory_theory}
 
-\subsection{Bài toán}
+Quyết định tồn kho được mô hình hóa bằng chính sách \textbf{rà soát liên tục $(r,q)$}: khi mức tồn kho chạm \textit{điểm đặt lại} $r$ thì đặt một lô cỡ $q$. Hai câu hỏi - \textit{đặt bao nhiêu mỗi lần} và \textit{khi nào đặt} - được trả lời thống nhất bởi cỡ lô kinh tế (EOQ) và mức phục vụ suy từ chi phí (Newsvendor).
 
-Bài toán Newsvendor (người bán báo) \cite{arrow1951optimal} xét việc đặt hàng một kỳ với nhu cầu ngẫu nhiên $D \sim F$. Nếu đặt $Q$ đơn vị:
-\begin{itemize}
-  \item Nếu $D > Q$: thiếu $(D - Q)$ đơn vị, mỗi đơn vị thiệt hại $\Cu$ (lợi nhuận mất).
-  \item Nếu $D < Q$: thừa $(Q - D)$ đơn vị, mỗi đơn vị thiệt hại $\Co$ (chi phí tồn kho).
-\end{itemize}
-
-\subsection{Mức tồn kho tối ưu}
-
-Tổng chi phí kỳ vọng:
+\textbf{Cỡ lô kinh tế (EOQ)} \cite{harris1913many} cân bằng chi phí đặt hàng cố định và chi phí lưu kho:
 \begin{equation}
-  TC(Q) = \Cu \cdot \mathbb{E}[\max(D-Q, 0)] + \Co \cdot \mathbb{E}[\max(Q-D, 0)].
+  Q^* = \sqrt{\frac{2DS}{H}}, \quad D = \text{nhu cầu năm},\; S = \text{chi phí mỗi lần đặt},\; H = \text{lưu kho/đơn vị/năm}.
 \end{equation}
 
-Tối thiểu hóa $TC(Q)$ cho kết quả \cite{porteus2002foundations}:
+\textbf{Mức phục vụ từ chi phí (Newsvendor).} Bài toán Newsvendor một kỳ \cite{arrow1951optimal} với thiệt hại $\Cu$ khi thiếu và $\Co$ khi thừa mỗi đơn vị, tối thiểu hóa $TC(Q)=\Cu\,\mathbb{E}[(D{-}Q)^+]+\Co\,\mathbb{E}[(Q{-}D)^+]$, cho \cite{porteus2002foundations}:
 \begin{equation}
-  \boxed{Q^* = F^{-1}(\CR), \qquad \CR = \frac{\Cu}{\Cu + \Co}.}
+  \boxed{\CR = \frac{\Cu}{\Cu+\Co}}
+\end{equation}
+$\CR$ (\textit{tỷ lệ tới hạn}) vừa là \textbf{mức phân vị tối ưu} của nhu cầu, vừa là \textbf{mức phục vụ} tối ưu (xác suất không hết hàng). Lãi cao ($\Cu\gg\Co$) $\Rightarrow \CR\to1$ (phục vụ cao, chuẩn bị P90+); dễ ế ($\Co\gg\Cu$) $\Rightarrow \CR\to0$.
+
+\textbf{Tồn kho an toàn \& điểm đặt lại.} Mức phục vụ $\CR$ cho $z=\Phi^{-1}(\CR)$; tồn kho an toàn đệm cho bất định nhu cầu trong thời gian chờ $L$:
+\begin{equation}
+  \text{SS} = z\,\sigma\sqrt{L}, \qquad r = \mu_D L + \text{SS}, \qquad
+  TC = \tfrac{D}{Q}S + \big(\tfrac{Q}{2}+\text{SS}\big)H + \mathbb{E}(\text{thiếu hàng}).
 \end{equation}
 
-$\CR$ được gọi là \textbf{tỷ lệ tới hạn} (critical ratio) - đồng thời là mức phân vị tối ưu của phân phối nhu cầu. Ý nghĩa kinh tế rõ ràng:
-\begin{itemize}
-  \item Sản phẩm lãi cao ($\Cu \gg \Co$) $\Rightarrow$ $\CR \to 1$ $\Rightarrow$ chuẩn bị ở phân vị cao (P90, P95), chấp nhận ít khi hết hàng.
-  \item Sản phẩm dễ ế/chi phí tồn cao ($\Co \gg \Cu$) $\Rightarrow$ $\CR \to 0$ $\Rightarrow$ chuẩn bị ở phân vị thấp, chấp nhận đôi khi cháy hàng.
-\end{itemize}
-
-\subsection{Kết hợp với dự báo phân vị}
-
-Khi $F$ được ước lượng từ mô hình dự báo phân vị rời rạc $\{(q_k, \hat{F}^{-1}(q_k))\}$, $Q^*$ được tính bằng nội suy tuyến tính:
-\begin{equation}
-  Q^* = \hat{F}^{-1}(\CR) = \text{interp}\!\left(\CR;\; [q_1,\ldots,q_K],\; [\hat{y}_{q_1},\ldots,\hat{y}_{q_K}]\right).
-\end{equation}
-
-\section{Mô hình EOQ}
-
-Mô hình Economic Order Quantity \cite{harris1913many} tối ưu cỡ lô đặt hàng cho vận hành liên tục:
-\begin{equation}
-  Q^*_{\text{EOQ}} = \sqrt{\frac{2DS}{H}},
-\end{equation}
-trong đó $D$ = nhu cầu năm, $S$ = chi phí một lần đặt, $H$ = chi phí lưu kho/đơn vị/năm.
-
-Tồn kho an toàn: $\text{SS} = z \cdot \sigma \cdot \sqrt{L}$, điểm đặt hàng lại: $\text{ROP} = \bar{d} \cdot L + \text{SS}$.
+\textbf{Mắt xích thống nhất:} dự báo phân vị cung cấp $\mu_D$ và $\sigma$ (độ bất định), còn cấu trúc chi phí (qua $\CR$) cung cấp mức phục vụ - cả hai cùng xác định $(r,q)$. Mức chuẩn bị tại $\CR$ lấy bằng nội suy từ các phân vị rời rạc: $\hat F^{-1}(\CR)=\text{interp}(\CR; [q_k],[\hat y_{q_k}])$.
 
 % ==================== CHƯƠNG 3 ====================
 \chapter{Dữ liệu và Phương pháp}
@@ -1084,31 +1063,19 @@ Khoảng phân vị P5-P95 cho tháng 1/2025 là khoảng 17.640 đơn vị, cho
   \label{fig:fanchart}
 \end{figure}
 
-\section{Kết quả tối ưu hóa tồn kho (Newsvendor)}
+\section{Kết quả tối ưu tồn kho $(r,q)$}
 
-\subsection{Ví dụ số: tháng 2025-01}
+\subsection{Ví dụ số}
 
-Giả sử người dùng nhập thông số kinh tế:
-\begin{itemize}
-  \item Lãi mỗi sản phẩm: $\Cu = 30{,}000$ đồng
-  \item Hết hàng - thiệt hại thêm (mất uy tín, v.v.): $0$ đồng (để đơn giản)
-  \item Thiệt hại khi ế/tồn: $\Co = 4{,}000$ đồng
-  \item Tồn kho hiện tại: 100.000 sản phẩm, hàng đang về: 0
-\end{itemize}
+Giả sử: lãi mỗi sản phẩm $\Cu = 30.000$đ, thiệt hại khi ế $\Co = 4.000$đ, thời gian chờ $L=2$ tháng, tồn kho hiện tại 100.000. Áp dụng mô hình $(r,q)$ ở mục~\ref{sec:inventory_theory}:
 
-\textbf{Tính tỷ lệ tới hạn:}
-\begin{equation}
-  \CR = \frac{30{,}000}{30{,}000 + 4{,}000} = \frac{30}{34} \approx 0{,}882.
-\end{equation}
+\begin{enumerate}
+  \item \textbf{Mức phục vụ từ chi phí:} $\CR = \tfrac{30.000}{34.000} = 0{,}882 \Rightarrow z=\Phi^{-1}(0{,}882)=1{,}19$ (phục vụ $\approx 88\%$).
+  \item \textbf{Tồn kho an toàn \& điểm đặt lại:} với $\sigma\approx 5.104$ (độ lệch chuẩn sai số dự báo) và $\mu_D\approx 346.550$ (nhu cầu trung bình/tháng): $\text{SS} = z\sigma\sqrt{L} \approx 8.600$; điểm đặt lại $r = \mu_D L + \text{SS} \approx 701.700$.
+  \item \textbf{Mức chuẩn bị \& lượng đặt:} mức chuẩn bị tối ưu là phân vị $\CR$ của nhu cầu $\approx \hat F^{-1}(0{,}882) = 328.300$; cần đặt thêm $328.300 - 100.000 = 228.300$ đơn vị. Cỡ lô $q$ cho vận hành lặp lại lấy theo EOQ khi biết chi phí đặt và lưu kho.
+\end{enumerate}
 
-\textbf{Mức tồn kho tối ưu:} $Q^* = F^{-1}(0{,}882)$. Nội suy từ phân vị tháng 2025-01 cho $Q^* \approx 328{,}300$ đơn vị.
-
-\textbf{Lượng cần đặt thêm:}
-\begin{equation}
-  \text{OrderQty} = \max\!\left(0,\; Q^* - \text{Position}\right) = \max(0,\; 328{,}300 - 100{,}000) = 228{,}300 \text{ đơn vị}.
-\end{equation}
-
-\textbf{Diễn giải:} Lãi khi bán (\Cu) lớn hơn thiệt hại khi ế (\Co) gần 7,5 lần $\Rightarrow$ tỷ lệ tới hạn 0,882 $\Rightarrow$ nên chuẩn bị hàng ở mức P88, đủ đáp ứng trong khoảng \textbf{88\% số tháng}. Nên đặt thêm 228.300 đơn vị.
+\textbf{Diễn giải:} lãi cao gấp $\sim$7,5 lần thiệt hại khi ế $\Rightarrow$ mức phục vụ 88\% (phân vị P88) - tức ưu tiên \textit{ít khi hết hàng}. Đây là điều dự báo điểm đơn lẻ không thể hiện được.
 
 \subsection{Phân tích độ nhạy}
 
@@ -1188,7 +1155,7 @@ Báo cáo đã xây dựng thành công một hệ hỗ trợ quyết định đ
 \begin{enumerate}
   \item \textbf{Mô hình dự báo đa phân vị:} RevIN + N-BEATS tự triển khai bằng PyTorch, huấn luyện bằng pinball loss, đạt MAPE = 1,15\% trên tập test 24 tháng - vượt trội gần 20 lần so với phương pháp Naive đơn giản.
 
-  \item \textbf{Kết nối dự báo - quyết định:} Mô hình Newsvendor sử dụng trực tiếp phân phối xác suất từ dự báo phân vị để tìm mức tồn kho tối ưu theo tiêu chí kinh tế (tối thiểu chi phí kỳ vọng). Cách tiếp cận này có cơ sở lý thuyết vững và có thể giải thích được với người dùng phi kỹ thuật.
+  \item \textbf{Kết nối dự báo - quyết định:} Mô hình tồn kho $(r,q)$ (kết hợp Newsvendor và EOQ) dùng trực tiếp phân phối xác suất từ dự báo phân vị để xác định mức chuẩn bị, tồn kho an toàn và cỡ lô theo tiêu chí kinh tế. Cách tiếp cận này có cơ sở lý thuyết vững và giải thích được với người dùng phi kỹ thuật.
 
   \item \textbf{Hai giao diện người dùng:} ứng dụng web Streamlit song song cho phép cả chuyên gia phân tích lẫn quản lý kinh doanh ra quyết định từ cùng một nền tảng dự báo.
 \end{enumerate}
@@ -1202,7 +1169,7 @@ Báo cáo đã xây dựng thành công một hệ hỗ trợ quyết định đ
 
   \item \textbf{Mô hình triển khai chưa dùng biến ngoại sinh:} N-BEATS triển khai chạy đơn biến (chỉ \texttt{Quantity}) để vận hành đơn giản. Thử nghiệm đa biến (TSMixer với 6 ngoại sinh) cho thấy thông tin ngoại sinh có ích và đạt độ chính xác tương đương - một hướng triển khai thay thế nếu thu thập được biến ngoại sinh ổn định.
 
-  \item \textbf{Newsvendor đơn kỳ:} Mô hình Newsvendor tối ưu cho từng tháng độc lập. Vận hành thực tế có chi phí đặt hàng cố định và ràng buộc tồn kho đa kỳ - cần mở rộng sang các mô hình phức tạp hơn (EOQ với safety stock, hay lập trình động).
+  \item \textbf{Mô hình tồn kho đơn giản hóa:} mô hình $(r,q)$ giả định chi phí và thời gian chờ cố định, nhu cầu xấp xỉ chuẩn và xét một sản phẩm. Vận hành thực tế đa sản phẩm với ràng buộc ngân sách/kho cần mở rộng (vd. tối ưu đa sản phẩm, lập trình động).
 
   \item \textbf{Tinh chỉnh trên tập validation nhỏ:} mỗi mô hình được tinh chỉnh Optuna trên tập validation chỉ 12 điểm, nên việc chọn siêu tham số có nhiễu (xem mục~\ref{sec:top5}: vài bộ tốt trên val lại kém trên test). Bộ N-BEATS thắng cuộc cũng khá lớn (1,9 triệu tham số) so với dữ liệu nhỏ; cần dữ liệu nhiều hơn để khẳng định chắc chắn. Ngoài ra, các mô hình đa biến mới chỉ dùng 6 ngoại sinh chọn theo tương quan tuyến tính, chưa thử các tập biến hay độ trễ khác.
 \end{enumerate}
