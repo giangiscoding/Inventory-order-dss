@@ -173,8 +173,8 @@
   \end{columns}
   \vfill
   \centering\footnotesize
-  Siêu tham số tối ưu bằng \textbf{Optuna} (100 trial): lookback 24, hidden 512,
-  2 stack $\times$ 2 block, 3 lớp.
+  Siêu tham số tối ưu bằng \textbf{Optuna} (100 trial): lookback 24, hidden 384,
+  2 stack $\times$ 3 block, 3 lớp.
 \end{frame}
 
 \begin{frame}{Dự báo đa phân vị}
@@ -191,8 +191,8 @@
   \end{block}
 \end{frame}
 
-\begin{frame}{Tự cài đặt \& so sánh 5 kiến trúc}
-  Cùng giao thức (3 hạt giống); MLP/NHITS/N-BEATS \emph{đơn biến}, DLinear/TSMixer \emph{đa biến} (+6 ngoại sinh):
+\begin{frame}{So sánh công bằng: mỗi mô hình tinh chỉnh Optuna riêng}
+  \textbf{Mỗi mô hình} được Optuna tinh chỉnh riêng (100 trial); DLinear/TSMixer \emph{đa biến} (+6 ngoại sinh):
   \vspace{0.15cm}
   \begin{columns}[c]
     \begin{column}{0.5\textwidth}
@@ -202,23 +202,23 @@
         Mô hình & MAE & Pinball \\
         \midrule
         Naive             & 80.045 & -- \\
-        DLinear \tiny(đa biến) & 12.598 & 3.841 \\
-        NHITS             & 7.722  & 2.235 \\
-        MLP               & \textbf{6.203} & 2.026 \\
-        TSMixer \tiny(đa biến) & 6.339 & 1.919 \\
-        \textbf{N-BEATS}  & 6.234 & \textbf{1.868} \\
+        MLP               & 7.188 & 2.234 \\
+        NHITS             & 6.937 & 1.977 \\
+        TSMixer \tiny(đa biến) & 5.648 & 1.615 \\
+        DLinear \tiny(đa biến) & 4.854 & 1.498 \\
+        \textbf{N-BEATS}  & \textbf{3.894} & \textbf{1.145} \\
         \bottomrule
       \end{tabular}
       \vspace{0.2cm}
-      \par{\scriptsize (test 24 tháng, giao thức chung)}
+      \par{\scriptsize (test 24 tháng, 3 hạt giống)}
     \end{column}
     \begin{column}{0.5\textwidth}
-      \includegraphics[width=\linewidth]{cmp1_mae_mape}
+      \includegraphics[width=\linewidth]{tune_all}
     \end{column}
   \end{columns}
   \vspace{0.1cm}
-  {\small \textbf{4 mô hình tốt nhất gần như ngang nhau}. TSMixer nhờ \textbf{6 biến ngoại sinh}
-  cải thiện vọt (MAE 22k$\to$6,3k) và cực gọn ($\sim$14,6k tham số).}
+  {\small Khi tinh chỉnh công bằng, \textbf{N-BEATS tốt nhất rõ rệt} (mọi chỉ số).
+  DLinear đa biến hạng nhì mà chỉ \textbf{2,4k tham số}.}
 \end{frame}
 
 % ============================================================
@@ -230,12 +230,12 @@
     \begin{column}{0.36\textwidth}
       \begin{block}{N-BEATS tinh chỉnh}
         \begin{itemize}
-          \item MAE = \textbf{5.048}
-          \item MAPE = \textbf{1,52\%}
-          \item RMSE = 5.787
+          \item MAE = \textbf{4.074}
+          \item MAPE = \textbf{1,15\%}
+          \item RMSE = 5.090
         \end{itemize}
       \end{block}
-      Vượt trội gần \textbf{16 lần} so với Naive (MAE 80.045).
+      Vượt trội gần \textbf{20 lần} so với Naive (MAE 80.045).
     \end{column}
     \begin{column}{0.64\textwidth}
       \includegraphics[width=\linewidth]{res1_test_forecast}
@@ -290,7 +290,7 @@
       \end{itemize}
       \vspace{0.15cm}
       {\footnotesize \textbf{Ví dụ 01/2025:} $\Cu{=}30k$, $\Co{=}4k \Rightarrow \CR{=}0{,}88$
-      $\Rightarrow$ P88 $\approx 321.700$ $\Rightarrow$ đặt thêm \textbf{221.700}.}
+      $\Rightarrow$ P88 $\approx 328.300$ $\Rightarrow$ đặt thêm \textbf{228.300}.}
     \end{column}
     \begin{column}{0.5\textwidth}
       \includegraphics[width=\linewidth]{res4_cost_curve}
@@ -304,10 +304,10 @@
     \toprule
     $\Cu$ (đ) & $\Co$ (đ) & \CR & Phân vị & Mức chuẩn bị \\
     \midrule
-    30.000 & 10.000 & 0,75 & P75 & 318.890 \\
-    30.000 & 4.000  & 0,88 & P88 & 321.669 \\
-    30.000 & 1.000  & 0,97 & P97 & 324.256 \\
-    10.000 & 30.000 & 0,25 & P25 & 313.026 \\
+    30.000 & 10.000 & 0,75 & P75 & 325.646 \\
+    30.000 & 4.000  & 0,88 & P88 & 328.254 \\
+    30.000 & 1.000  & 0,97 & P97 & 331.250 \\
+    10.000 & 30.000 & 0,25 & P25 & 319.299 \\
     \bottomrule
   \end{tabular}
   \vfill
@@ -370,7 +370,7 @@
 \begin{frame}{Kết luận}
   \begin{enumerate}
     \item \textbf{Dự báo đa phân vị} RevIN + N-BEATS tự triển khai, đạt MAPE
-          \textbf{1,52\%} --- vượt baseline $\sim$16 lần; so sánh khách quan 5 kiến trúc.
+          \textbf{1,15\%} --- vượt baseline $\sim$20 lần; tinh chỉnh Optuna công bằng 5 kiến trúc.
     \item \textbf{Kết nối dự báo $\rightarrow$ quyết định} qua Newsvendor: khuyến nghị
           đặt hàng có cơ sở kinh tế, giải thích được.
     \item \textbf{Hai giao diện web} phục vụ cả kỹ thuật viên lẫn quản lý kinh doanh.

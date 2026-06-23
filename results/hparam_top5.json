@@ -1,126 +1,126 @@
 {
   "n_trials": 100,
   "top_k": 5,
-  "n_completed": 87,
+  "n_completed": 73,
   "rows": [
     {
       "rank": 1,
-      "trial": 11,
-      "val_pinball": 979.1484284946085,
-      "best_epoch": 80,
+      "trial": 70,
+      "val_pinball": 933.0560950515905,
+      "best_epoch": 179,
       "params": {
         "lookback": 24,
-        "n_stacks": 2,
-        "n_blocks": 2,
-        "hidden_size": 512,
+        "learning_rate": 0.00019505503578447792,
+        "batch_size": 16,
+        "revin_affine": true,
+        "hidden_size": 384,
         "n_layers": 3,
-        "learning_rate": 0.00048420803007295733,
-        "batch_size": 8,
-        "dropout": 0.12813369168999952,
-        "revin_affine": false
+        "dropout": 0.06870275994742903,
+        "n_stacks": 2,
+        "n_blocks": 3
       },
       "test": {
-        "MAE": 5048.15966796875,
-        "RMSE": 5786.943359375,
-        "MAPE": 1.519672155380249,
-        "sMAPE": 1.510478138923645,
-        "PinballLoss": 1351.8316313244047
+        "MAE": 4074.359375,
+        "RMSE": 5089.76171875,
+        "MAPE": 1.1487442255020142,
+        "sMAPE": 1.146860122680664,
+        "PinballLoss": 1113.7787295386904
       }
     },
     {
       "rank": 2,
-      "trial": 83,
-      "val_pinball": 1031.4025671036457,
-      "best_epoch": 81,
+      "trial": 76,
+      "val_pinball": 1045.753670811254,
+      "best_epoch": 57,
       "params": {
         "lookback": 24,
-        "n_stacks": 2,
-        "n_blocks": 2,
-        "hidden_size": 512,
+        "learning_rate": 0.00029971447958980187,
+        "batch_size": 16,
+        "revin_affine": true,
+        "hidden_size": 384,
         "n_layers": 3,
-        "learning_rate": 0.00014356822889885503,
-        "batch_size": 8,
-        "dropout": 0.07422243675885139,
-        "revin_affine": false
+        "dropout": 0.052047808961336525,
+        "n_stacks": 2,
+        "n_blocks": 3
       },
       "test": {
-        "MAE": 6023.79443359375,
-        "RMSE": 7473.67236328125,
-        "MAPE": 1.865436315536499,
-        "sMAPE": 1.8397095203399658,
-        "PinballLoss": 1724.5410760788689
+        "MAE": 4890.96240234375,
+        "RMSE": 5872.60595703125,
+        "MAPE": 1.4049965143203735,
+        "sMAPE": 1.4052780866622925,
+        "PinballLoss": 1337.4227818080358
       }
     },
     {
       "rank": 3,
-      "trial": 95,
-      "val_pinball": 1065.5079987569313,
-      "best_epoch": 60,
+      "trial": 74,
+      "val_pinball": 1061.0783387076642,
+      "best_epoch": 62,
       "params": {
         "lookback": 24,
-        "n_stacks": 2,
-        "n_blocks": 2,
-        "hidden_size": 512,
+        "learning_rate": 0.00019619352596091864,
+        "batch_size": 16,
+        "revin_affine": true,
+        "hidden_size": 384,
         "n_layers": 3,
-        "learning_rate": 0.00014819729274653435,
-        "batch_size": 8,
-        "dropout": 0.06217925941058832,
-        "revin_affine": true
+        "dropout": 0.07249411203465994,
+        "n_stacks": 2,
+        "n_blocks": 3
       },
       "test": {
-        "MAE": 5984.73193359375,
-        "RMSE": 7684.39111328125,
-        "MAPE": 1.8129749298095703,
-        "sMAPE": 1.8330644369125366,
-        "PinballLoss": 1766.514671688988
+        "MAE": 11142.3076171875,
+        "RMSE": 12985.2412109375,
+        "MAPE": 3.6273107528686523,
+        "sMAPE": 3.7286226749420166,
+        "PinballLoss": 3302.2663178943453
       }
     },
     {
       "rank": 4,
-      "trial": 85,
-      "val_pinball": 1154.0749752426252,
-      "best_epoch": 107,
+      "trial": 78,
+      "val_pinball": 1068.7049068487763,
+      "best_epoch": 64,
       "params": {
         "lookback": 24,
-        "n_stacks": 2,
-        "n_blocks": 2,
-        "hidden_size": 512,
+        "learning_rate": 0.00029861696883824273,
+        "batch_size": 16,
+        "revin_affine": true,
+        "hidden_size": 384,
         "n_layers": 3,
-        "learning_rate": 0.00017040302964278732,
-        "batch_size": 8,
-        "dropout": 0.08582669551604519,
-        "revin_affine": false
+        "dropout": 0.08658804173054531,
+        "n_stacks": 2,
+        "n_blocks": 3
       },
       "test": {
-        "MAE": 5658.25830078125,
-        "RMSE": 7467.216796875,
-        "MAPE": 1.7037384510040283,
-        "sMAPE": 1.6811403036117554,
-        "PinballLoss": 1663.6830868675595
+        "MAE": 8653.98046875,
+        "RMSE": 11124.150390625,
+        "MAPE": 2.8344414234161377,
+        "sMAPE": 2.905938148498535,
+        "PinballLoss": 2557.6595052083335
       }
     },
     {
       "rank": 5,
-      "trial": 59,
-      "val_pinball": 1175.3377068381567,
-      "best_epoch": 106,
+      "trial": 84,
+      "val_pinball": 1115.9704389540289,
+      "best_epoch": 61,
       "params": {
         "lookback": 24,
-        "n_stacks": 2,
-        "n_blocks": 2,
-        "hidden_size": 448,
+        "learning_rate": 0.0001800561218229049,
+        "batch_size": 16,
+        "revin_affine": true,
+        "hidden_size": 384,
         "n_layers": 3,
-        "learning_rate": 0.00014046017935892552,
-        "batch_size": 8,
-        "dropout": 0.12945950485425628,
-        "revin_affine": false
+        "dropout": 0.07599879042305092,
+        "n_stacks": 2,
+        "n_blocks": 3
       },
       "test": {
-        "MAE": 4114.82958984375,
-        "RMSE": 5254.91455078125,
-        "MAPE": 1.2831575870513916,
-        "sMAPE": 1.291873574256897,
-        "PinballLoss": 1380.0114815848215
+        "MAE": 4613.78466796875,
+        "RMSE": 6405.5361328125,
+        "MAPE": 1.3240684270858765,
+        "sMAPE": 1.3093669414520264,
+        "PinballLoss": 1557.8449032738095
       }
     }
   ]

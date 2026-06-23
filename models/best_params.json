@@ -1,14 +1,14 @@
 {
   "params": {
     "lookback": 24,
-    "n_stacks": 2,
-    "n_blocks": 2,
-    "hidden_size": 512,
+    "learning_rate": 0.00019505503578447792,
+    "batch_size": 16,
+    "revin_affine": true,
+    "hidden_size": 384,
     "n_layers": 3,
-    "learning_rate": 0.00048420803007295733,
-    "batch_size": 8,
-    "dropout": 0.12813369168999952,
-    "revin_affine": false
+    "dropout": 0.06870275994742903,
+    "n_stacks": 2,
+    "n_blocks": 3
   },
   "horizon": 1,
   "quantiles": [
@@ -21,7 +21,7 @@
     0.95
   ],
   "scale": 353156.46428571426,
-  "best_epoch": 80,
-  "best_val_pinball": 979.1484284946085,
-  "sigma_demand_monthly": 5194.763671875
+  "best_epoch": 179,
+  "sigma_demand_monthly": 5104.478515625,
+  "source": "tune_all (so sanh cong bang)"
 }

@@ -18,32 +18,22 @@ import numpy as np
 import optuna
 import torch
 
-from .data_loader import ROOT, WindowDataset, load_series, split_indices
-from .evaluate import all_metrics, pinball_loss
-from .train import predict_quantiles, train_model
-from .tune_optuna import HORIZON, MEDIAN_IDX, QUANTILES, suggest_params
+from .data_loader import ROOT, load_series, split_indices
+from .tune_all import HORIZON, MEDIAN_IDX, QUANTILES, eval_test, suggest, train_with_params
 
 RESULTS_DIR = ROOT / "results"
 FIG_DIR = ROOT / "report" / "figures"
 
 
-def evaluate_params(ys, params, train_end, val_end, n, scale):
-    """Tra ve (val_pinball, best_epoch, test_metrics) cho mot bo sieu tham so."""
-    # 1) Tim so epoch toi uu bang early stopping tren validation.
-    _, val_pin, best_epoch = train_model(
-        ys, params, HORIZON, (0, train_end), (train_end, val_end), quantiles=QUANTILES,
-    )
-    # 2) Huan luyen lai tren train+val voi so epoch co dinh, danh gia test.
-    model, _, _ = train_model(
-        ys, params, HORIZON, (0, val_end), None, quantiles=QUANTILES,
-        fixed_epochs=max(best_epoch, 1),
-    )
-    test_ds = WindowDataset(ys, params["lookback"], HORIZON, (val_end, n))
-    yt, yq = predict_quantiles(model, test_ds)
-    yt, yq = yt * scale, yq * scale
-    m = all_metrics(yt, yq[:, MEDIAN_IDX])
-    m["PinballLoss"] = pinball_loss(yt, yq, QUANTILES)
-    return val_pin * scale, best_epoch, m
+def evaluate_params(params, data, train_end, val_end, n):
+    """Tra ve (val_pinball, best_epoch, test_metrics) cho mot bo sieu tham so
+    N-BEATS, dung CUNG machinery voi tune_all de nhat quan."""
+    _, val_pin, best_epoch = train_with_params(
+        "NBEATS", params, data, (0, train_end), (train_end, val_end))
+    model, _, _ = train_with_params(
+        "NBEATS", params, data, (0, val_end), None, fixed_epochs=max(best_epoch, 1), seed=0)
+    m, _ = eval_test(model, "NBEATS", params, data, (val_end, n))
+    return val_pin * data["scale"], best_epoch, m
 
 
 def main(n_trials: int = 100, top_k: int = 5) -> None:
@@ -52,14 +42,13 @@ def main(n_trials: int = 100, top_k: int = 5) -> None:
     train_end, val_end = split_indices(n)
     scale = float(y[:train_end].mean())
     ys = y / scale
+    data = {"ys": ys, "scale": scale, "Xs": None, "target_std": None, "n_features": 1}
 
     def objective(trial: optuna.Trial) -> float:
-        params = suggest_params(trial)
-        _, val_pin, _ = train_model(
-            ys, params, HORIZON, (0, train_end), (train_end, val_end),
-            quantiles=QUANTILES, trial=trial,
-        )
-        return val_pin * scale
+        params = suggest("NBEATS", trial)
+        _, val_pin, _ = train_with_params(
+            "NBEATS", params, data, (0, train_end), (train_end, val_end), trial=trial)
+        return val_pin
 
     study = optuna.create_study(
         direction="minimize",
@@ -76,7 +65,7 @@ def main(n_trials: int = 100, top_k: int = 5) -> None:
     print(f"\n{'Hang':>4} {'Trial':>5} {'ValPin':>8} {'Epoch':>6} "
           f"{'TestMAE':>9} {'MAPE%':>6} {'TestPin':>8}")
     for rank, t in enumerate(top, 1):
-        val_pin, best_epoch, m = evaluate_params(ys, t.params, train_end, val_end, n, scale)
+        val_pin, best_epoch, m = evaluate_params(t.params, data, train_end, val_end, n)
         rows.append({
             "rank": rank, "trial": t.number, "val_pinball": val_pin,
             "best_epoch": best_epoch, "params": t.params, "test": m,
