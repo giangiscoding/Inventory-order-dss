@@ -115,17 +115,17 @@
 {\textbf{---o0o---}}
 
 \vspace{0.8cm}
-\includegraphics[height=7cm]{figures/logo.png}
+\includegraphics[height=10cm]{figures/logo.png}
 
 \vfill
 
-{\Large \bfseries HỆ HỖ TRỢ QUYẾT ĐỊNH ĐẶT HÀNG\\[5pt]
+\vspace{0.5cm}
+{\Huge\bfseries ĐỒ ÁN II}\\[0.5cm]
+{\large \textbf{Chuyên ngành:} Toán-Tin}
+\vfill
+{\Large \bfseries HỆ HỖ TRỢ QUYẾT ĐỊNH ĐẶT HÀNG\\[4pt]
 DỰA TRÊN DỰ BÁO CHUỖI THỜI GIAN\\[5pt]
 ĐA PHÂN VỊ VÀ TỐI ƯU HÓA TỒN KHO}
-
-\vspace{1.0cm}
-{\huge \bfseries ĐỒ ÁN II}\\[0.5cm]
-{\large \textbf{Chuyên ngành:} Toán Tin}
 
 \vfill
 
@@ -139,7 +139,7 @@ DỰA TRÊN DỰ BÁO CHUỖI THỜI GIAN\\[5pt]
 
 \vfill
 {\large \bfseries Hà Nội, 2026}
-\vspace*{-1.9cm}
+\vspace*{-1.6cm}
 \end{center}
 \end{titlepage}
 
@@ -149,11 +149,11 @@ DỰA TRÊN DỰ BÁO CHUỖI THỜI GIAN\\[5pt]
 \chapter*{Tóm tắt}
 \addcontentsline{toc}{chapter}{Tóm tắt}
 
-Báo cáo này trình bày thiết kế và triển khai một \textbf{Hệ hỗ trợ quyết định đặt hàng} (Decision Support System - DSS) tích hợp hai thành phần chính: (1) mô hình dự báo nhu cầu chuỗi thời gian đa phân vị và (2) mô hình tối ưu hóa tồn kho có cơ sở kinh tế.
+Đồ án này trình bày thiết kế và triển khai một \textbf{Hệ hỗ trợ quyết định đặt hàng} (Decision Support System - DSS) tích hợp hai thành phần chính: (1) mô hình dự báo nhu cầu chuỗi thời gian đa phân vị và (2) mô hình tối ưu hóa tồn kho có cơ sở kinh tế.
 
 Về dự báo, mô hình \textbf{RevIN + N-BEATS} được tự xây dựng bằng PyTorch kết hợp chuẩn hóa theo thực thể đảo ngược (Reversible Instance Normalization - RevIN) và kiến trúc N-BEATS với đầu ra đa phân vị (P5, P10, P25, P50, P75, P90, P95). Mô hình được huấn luyện bằng hàm mất mát \textit{pinball loss} - tiêu chuẩn lý thuyết cho hồi quy phân vị - và tối ưu siêu tham số bằng thuật toán Optuna (100 thử nghiệm, TPE sampler). Dữ liệu là 120 quan sát tháng (2015-2024), chia theo chiến lược thời gian 7:1:2 (train 84, validation 12, test 24 tháng).
 
-Trên tập kiểm tra 24 tháng (2023-2024), mô hình đạt \textbf{MAE = 5.048, MAPE = 1,52\%}, vượt trội gần \textbf{16 lần} so với phương pháp cơ sở Naive (MAE = 80.045, MAPE = 23,59\%). Để kiểm chứng lựa chọn kiến trúc, chúng tôi \textbf{tự cài đặt và so sánh thêm bốn kiến trúc dự báo phân vị khác} (MLP, DLinear, TSMixer, NHITS) dưới cùng một giao thức huấn luyện: N-BEATS và MLP cho kết quả tốt nhất, và sau khi tinh chỉnh siêu tham số, N-BEATS vượt trội. Về quyết định tồn kho, kết quả phân vị được đưa vào \textbf{mô hình Newsvendor} - tỷ lệ tới hạn $\CR = \Cu/(\Cu + \Co)$ xác định trực tiếp mức phân vị tối ưu cần chuẩn bị, mang ý nghĩa kinh tế rõ ràng mà dự báo điểm không thể hiện được. Mô hình \textbf{EOQ} bổ sung khuyến nghị cỡ lô cho vận hành dài hạn.
+Trên tập kiểm tra 24 tháng (2023-2024), mô hình đạt \textbf{MAE = 5.048, MAPE = 1,52\%}, vượt trội gần \textbf{16 lần} so với phương pháp cơ sở Naive (MAE = 80.045, MAPE = 23,59\%). Để kiểm chứng lựa chọn kiến trúc, em đã \textbf{tự cài đặt và so sánh thêm bốn kiến trúc dự báo phân vị khác} (MLP, DLinear, TSMixer, NHITS) dưới cùng một giao thức huấn luyện: N-BEATS và MLP cho kết quả tốt nhất, và sau khi tinh chỉnh siêu tham số, N-BEATS vượt trội. Về quyết định tồn kho, kết quả phân vị được đưa vào \textbf{mô hình Newsvendor} - tỷ lệ tới hạn $\CR = \Cu/(\Cu + \Co)$ xác định trực tiếp mức phân vị tối ưu cần chuẩn bị, mang ý nghĩa kinh tế rõ ràng mà dự báo điểm không thể hiện được. Mô hình \textbf{EOQ} bổ sung khuyến nghị cỡ lô cho vận hành dài hạn.
 
 Hệ thống được triển khai dưới dạng hai ứng dụng web Streamlit: bản kỹ thuật đầy đủ chỉ số và bản dành cho người dùng kinh doanh với ngôn ngữ đời thường.
 
