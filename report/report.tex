@@ -1031,6 +1031,35 @@ Nhận xét: nhìn chung calibration khá tốt - P50 bao phủ 0,58 (gần mứ
 
 Một phát hiện đáng chú ý khi xét calibration của các kiến trúc đã tinh chỉnh: \textbf{độ chính xác điểm và độ hiệu chỉnh không hoàn toàn trùng nhau}. N-BEATS (chính xác nhất) cũng hiệu chỉnh khá tốt ở vùng giữa; TSMixer đa biến hợp lý; trong khi NHITS \textit{bao phủ vượt mức} (khoảng phân vị quá rộng) còn DLinear \textit{bao phủ thiếu} (khoảng quá hẹp). Điều này gợi ý rằng nếu ưu tiên độ tin cậy của khoảng phân vị (quan trọng cho quyết định tồn kho theo $\CR$), nên cân nhắc cả calibration chứ không chỉ độ chính xác điểm; một hướng tiềm năng là conformal prediction (mục~\ref{sec:future}).
 
+\section{Kiểm chứng bằng backtest gốc trượt}
+\label{sec:backtest}
+
+Đánh giá trên một tập test cố định (dù 24 tháng) vẫn nhạy với việc giai đoạn đó ``dễ'' hay ``khó''. Để có ước lượng \textbf{đáng tin hơn} trên dữ liệu nhỏ, chúng tôi dùng \textbf{backtest gốc trượt} (rolling-origin, cửa sổ mở rộng): với mỗi tháng mục tiêu $t$ trong \textbf{36 tháng gần nhất} (2022-2024), mô hình được huấn luyện lại trên $[0, t\text{-}12)$, early stopping trên 12 tháng liền trước, rồi dự báo một bước cho tháng $t$. Cách này cho \textbf{36 điểm đánh giá} (thay vì 24) mà mỗi lần vẫn dùng gần như toàn bộ dữ liệu lịch sử để huấn luyện.
+
+\begin{table}[H]
+\centering
+\caption{So sánh đánh giá trên holdout cố định (test 24 tháng) và backtest gốc trượt (36 tháng) - cùng cấu hình N-BEATS triển khai.}
+\label{tab:backtest}
+\begin{tabular}{|l|r|r|r|r|}
+\hline
+\rowcolor{gray!18}
+Cách đánh giá & Số điểm & MAE & MAPE (\%) & Pinball \\
+\hline
+Holdout cố định (2023-2024) & 24 & 4.074 & 1,15 & 1.114 \\
+\textbf{Backtest gốc trượt (2022-2024)} & \textbf{36} & 5.851 & 1,77 & 1.818 \\
+\hline
+\end{tabular}
+\end{table}
+
+\textbf{Nhận xét:} backtest cho sai số \textit{cao hơn} (MAE 5.851 so với 4.074; MAPE 1,77\% so với 1,15\%) - cho thấy lát cắt 2023-2024 hơi thuận lợi, và ước lượng từ backtest \textbf{thực tế, thận trọng hơn}. Đây mới là con số nên dùng để đặt kỳ vọng vận hành. Phần các gốc đầu (2022) huấn luyện trên ít dữ liệu hơn nên góp phần làm sai số nhỉnh lên - đúng với thực tế triển khai dần. Calibration trên 36 điểm (Hình~\ref{fig:backtest}) cũng mượt và đáng tin hơn, giữ xu hướng \textit{bao phủ vượt mức} nhẹ ở vùng giữa (P50 $\approx 0{,}69$).
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{figures/backtest.png}
+  \caption{Backtest gốc trượt 36 tháng (2022-2024): (trái) dự báo một bước P50 và dải P10-P90 so với thực tế; (phải) calibration trên 36 điểm - đáng tin hơn so với đánh giá trên một holdout nhỏ.}
+  \label{fig:backtest}
+\end{figure}
+
 \section{Dự báo phân vị 12 tháng tới (2025)}
 
 \begin{table}[H]
@@ -1167,7 +1196,7 @@ Báo cáo đã xây dựng thành công một hệ hỗ trợ quyết định đ
 \section{Hạn chế}
 
 \begin{enumerate}
-  \item \textbf{Tập test vẫn còn nhỏ (24 điểm):} Chúng tôi đã tăng tập test lên 24 tháng (mỗi điểm $\approx 4,2\%$ xác suất) để đánh giá calibration đáng tin hơn, nhưng do tổng dữ liệu chỉ 120 tháng nên test vẫn chưa đủ lớn để kết luận chắc chắn về độ tin cậy phân vị. Backtest theo gốc trượt (rolling-origin) là hướng đánh giá robust hơn.
+  \item \textbf{Dữ liệu nhỏ (120 tháng):} tổng dữ liệu hạn chế khiến mọi đánh giá trên một holdout cố định đều nhạy với giai đoạn được chọn. Chúng tôi đã giảm thiểu bằng \textbf{backtest gốc trượt 36 tháng} (mục~\ref{sec:backtest}) cho ước lượng đáng tin hơn (MAE $\approx 5.850$), nhưng để kết luận thật chắc chắn về độ tin cậy phân vị vẫn cần thêm dữ liệu hoặc nhiều sản phẩm.
 
   \item \textbf{Dự báo đệ quy tích lũy sai số:} Dự báo đệ quy 12 tháng dùng P50 làm đầu vào cho bước tiếp theo - sai số tích lũy theo thời gian. Các tháng xa (T+10 đến T+12) có độ tin cậy thấp hơn đáng kể.
 
@@ -1279,6 +1308,7 @@ Inventory-order-dss/
 |   +- tune_optuna.py       (Optuna cho N-BEATS - legacy)
 |   +- tune_all.py          (Optuna RIENG tung mo hinh - so sanh cong bang)
 |   +- deploy_nbeats.py     (trien khai N-BEATS tot nhat tu tune_all)
+|   +- backtest.py          (backtest goc truot - danh gia robust)
 |   +- compare_models.py    (so sanh cau hinh co dinh chung - tham khao)
 |   +- compare_hparams.py   (top-5 bo sieu tham so N-BEATS)
 |   +- evaluate.py          (MAE/RMSE/MAPE + pinball + coverage)
@@ -1302,6 +1332,7 @@ Lệnh chạy chính:
 \begin{verbatim}
 python -m src.tune_all 100 3       # Optuna rieng tung mo hinh (so sanh cong bang)
 python -m src.deploy_nbeats        # trien khai N-BEATS tot nhat -> forecast.json
+python -m src.backtest 36 12       # backtest goc truot 36 thang
 python -m src.make_report_figures  # sinh hinh fig1 + res1-5
 python -m src.compare_hparams 100 5 # top-5 sieu tham so N-BEATS
 streamlit run app/app.py           # ung dung ky thuat
