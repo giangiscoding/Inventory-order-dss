@@ -117,8 +117,8 @@ python -m src.make_report_figures  # sinh hình kết quả (fig1 + res1-5)
 python -m src.compare_hparams 100 5 # top-5 siêu tham số N-BEATS
 python -m src.backtest 36 12       # backtest gốc trượt 36 tháng
 
-streamlit run app/app.py           # web app (bản kỹ thuật)
-streamlit run app/app_business.py  # web app (bản kinh doanh)
+python -m streamlit run app/app.py           # dashboard kỹ thuật
+python -m streamlit run app/app_business.py  # trợ lý đặt hàng (bản kinh doanh)
 ```
 
 ## 9. Môi trường
